@@ -1,0 +1,97 @@
+<svg width="1152" height="768" viewBox="24 24 1152 768" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="card-bg" x1="80" y1="36" x2="1120" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAF9FA"/>
+      <stop offset="1" stop-color="#D9F3F6"/>
+    </linearGradient>
+    <radialGradient id="center-glow" cx="0" cy="0" r="1" gradientTransform="translate(600 408) rotate(90) scale(260 320)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#19B7C8" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#19B7C8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="route-line" x1="375" y1="408" x2="825" y2="408" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#79D8E1" stop-opacity="0.52"/>
+      <stop offset="0.5" stop-color="#0FA4B7"/>
+      <stop offset="1" stop-color="#79D8E1" stop-opacity="0.52"/>
+    </linearGradient>
+    <filter id="node-shadow" x="-20%" y="-35%" width="140%" height="180%">
+      <feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#0B1733" flood-opacity="0.10"/>
+    </filter>
+    <filter id="center-shadow" x="-80%" y="-80%" width="260%" height="260%">
+      <feDropShadow dx="0" dy="13" stdDeviation="17" flood-color="#07899B" flood-opacity="0.20"/>
+    </filter>
+  </defs>
+
+  <g>
+    <rect x="24" y="24" width="1152" height="768" rx="0" fill="url(#card-bg)"/>
+    <rect x="24.75" y="24.75" width="1150.5" height="766.5" rx="0" stroke="#A8DDE3" stroke-width="1.5"/>
+  </g>
+
+  <ellipse cx="600" cy="408" rx="320" ry="280" fill="url(#center-glow)"/>
+
+  <path d="M392 168C486 168 500 300 535 360" stroke="url(#route-line)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M392 308C486 308 505 360 526 388" stroke="url(#route-line)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M392 508C486 508 505 456 526 428" stroke="url(#route-line)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M392 648C486 648 500 516 535 456" stroke="url(#route-line)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M665 360C700 300 714 168 808 168" stroke="url(#route-line)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M674 388C695 360 714 308 808 308" stroke="url(#route-line)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M674 428C695 456 714 508 808 508" stroke="url(#route-line)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M665 456C700 516 714 648 808 648" stroke="url(#route-line)" stroke-width="5" stroke-linecap="round"/>
+
+  <g filter="url(#node-shadow)" font-family="Arial, Helvetica, sans-serif">
+    <g transform="translate(88 124)">
+      <rect width="304" height="88" rx="0" fill="#FFFFFF"/>
+      <rect x="0.75" y="0.75" width="302.5" height="86.5" rx="0" stroke="#D6E6EA" stroke-width="1.5"/>
+      <image href="https://react-circle-flags.pages.dev/eu.svg" x="22" y="12" width="64" height="64"/>
+      <text x="112" y="55" fill="#0B1733" font-size="30" font-weight="700">EUR</text>
+    </g>
+    <g transform="translate(88 264)">
+      <rect width="304" height="88" rx="0" fill="#FFFFFF"/>
+      <rect x="0.75" y="0.75" width="302.5" height="86.5" rx="0" stroke="#D6E6EA" stroke-width="1.5"/>
+      <image href="https://react-circle-flags.pages.dev/us.svg" x="22" y="12" width="64" height="64"/>
+      <text x="112" y="55" fill="#0B1733" font-size="30" font-weight="700">USD</text>
+    </g>
+    <g transform="translate(88 464)">
+      <rect width="304" height="88" rx="0" fill="#FFFFFF"/>
+      <rect x="0.75" y="0.75" width="302.5" height="86.5" rx="0" stroke="#D6E6EA" stroke-width="1.5"/>
+      <image href="https://react-circle-flags.pages.dev/gb.svg" x="22" y="12" width="64" height="64"/>
+      <text x="112" y="55" fill="#0B1733" font-size="30" font-weight="700">GBP</text>
+    </g>
+    <g transform="translate(88 604)">
+      <rect width="304" height="88" rx="0" fill="#FFFFFF"/>
+      <rect x="0.75" y="0.75" width="302.5" height="86.5" rx="0" stroke="#D6E6EA" stroke-width="1.5"/>
+      <image href="https://react-circle-flags.pages.dev/ae.svg" x="22" y="12" width="64" height="64"/>
+      <text x="112" y="55" fill="#0B1733" font-size="30" font-weight="700">AED</text>
+    </g>
+
+    <g transform="translate(808 124)">
+      <rect width="304" height="88" rx="0" fill="#FFFFFF"/>
+      <rect x="0.75" y="0.75" width="302.5" height="86.5" rx="0" stroke="#D6E6EA" stroke-width="1.5"/>
+      <image href="/branding/crypto/btc.svg" x="22" y="12" width="64" height="64"/>
+      <text x="112" y="55" fill="#0B1733" font-size="30" font-weight="700">BTC</text>
+    </g>
+    <g transform="translate(808 264)">
+      <rect width="304" height="88" rx="0" fill="#FFFFFF"/>
+      <rect x="0.75" y="0.75" width="302.5" height="86.5" rx="0" stroke="#D6E6EA" stroke-width="1.5"/>
+      <image href="/branding/crypto/eth.svg" x="22" y="12" width="64" height="64"/>
+      <text x="112" y="55" fill="#0B1733" font-size="30" font-weight="700">ETH</text>
+    </g>
+    <g transform="translate(808 464)">
+      <rect width="304" height="88" rx="0" fill="#FFFFFF"/>
+      <rect x="0.75" y="0.75" width="302.5" height="86.5" rx="0" stroke="#D6E6EA" stroke-width="1.5"/>
+      <image href="/branding/crypto/usdc.svg" x="22" y="12" width="64" height="64"/>
+      <text x="112" y="55" fill="#0B1733" font-size="30" font-weight="700">USDC</text>
+    </g>
+    <g transform="translate(808 604)">
+      <rect width="304" height="88" rx="0" fill="#FFFFFF"/>
+      <rect x="0.75" y="0.75" width="302.5" height="86.5" rx="0" stroke="#D6E6EA" stroke-width="1.5"/>
+      <image href="/branding/crypto/usdt.svg" x="22" y="12" width="64" height="64"/>
+      <text x="112" y="55" fill="#0B1733" font-size="30" font-weight="700">USDT</text>
+    </g>
+  </g>
+
+  <g filter="url(#center-shadow)">
+    <circle cx="600" cy="408" r="82" fill="#E4F7F9"/>
+    <circle cx="600" cy="408" r="81" stroke="#75CCD5" stroke-width="2"/>
+    <image href="/branding/strivepay-mark.svg" x="562" y="358" width="76" height="100" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+</svg>

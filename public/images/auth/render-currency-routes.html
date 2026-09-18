@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Currency routes render</title>
+  <style>
+    html, body { margin: 0; background: #0da6b6; }
+    .frame {
+      width: 1152px;
+      height: 768px;
+      display: grid;
+      place-items: center;
+      background: #eaf9fa;
+      border: 1.5px solid #a8dde3;
+    }
+    .board {
+      width: 1152px;
+      height: 768px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #eaf9fa, #d9f3f6);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .glow {
+      position: absolute;
+      left: 270px; top: 128px;
+      width: 612px; height: 512px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(25,183,200,.13), transparent 70%);
+    }
+    svg.lines { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .hub {
+      position: absolute;
+      left: 518px; top: 326px;
+      width: 164px; height: 164px;
+      border-radius: 50%;
+      background: #e4f7f9;
+      border: 2px solid #75ccd5;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 13px 34px rgba(7,137,155,.2);
+    }
+    .hub img { width: 76px; height: 100px; object-fit: contain; }
+    .pill {
+      position: absolute;
+      width: 304px; height: 88px;
+      background: #fff;
+      border: 1.5px solid #d6e6ea;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      padding: 0 22px;
+      box-sizing: border-box;
+      box-shadow: 0 9px 20px rgba(11,23,51,.10);
+      color: #0b1733;
+      font-size: 30px;
+      font-weight: 700;
+    }
+    .pill img { width: 64px; height: 64px; border-radius: 50%; }
+    .l1 { left: 64px; top: 100px; }
+    .l2 { left: 64px; top: 240px; }
+    .l3 { left: 64px; top: 440px; }
+    .l4 { left: 64px; top: 580px; }
+    .r1 { left: 784px; top: 100px; }
+    .r2 { left: 784px; top: 240px; }
+    .r3 { left: 784px; top: 440px; }
+    .r4 { left: 784px; top: 580px; }
+  </style>
+</head>
+<body>
+  <div class="frame" id="card">
+    <div class="board">
+      <div class="glow"></div>
+      <svg class="lines" viewBox="0 0 1152 768" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="route" x1="375" y1="408" x2="825" y2="408" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#79D8E1" stop-opacity="0.52"/>
+            <stop offset="0.5" stop-color="#0FA4B7"/>
+            <stop offset="1" stop-color="#79D8E1" stop-opacity="0.52"/>
+          </linearGradient>
+        </defs>
+        <path d="M368 144C486 144 500 300 535 360" stroke="url(#route)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M368 284C486 284 505 360 526 388" stroke="url(#route)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M368 484C486 484 505 456 526 428" stroke="url(#route)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M368 624C486 624 500 516 535 456" stroke="url(#route)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M665 360C700 300 714 144 808 144" stroke="url(#route)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M674 388C695 360 714 284 808 284" stroke="url(#route)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M674 428C695 456 714 484 808 484" stroke="url(#route)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M665 456C700 516 714 624 808 624" stroke="url(#route)" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+
+      <div class="pill l1"><img src="https://react-circle-flags.pages.dev/eu.svg" alt=""/><span>EUR</span></div>
+      <div class="pill l2"><img src="https://react-circle-flags.pages.dev/us.svg" alt=""/><span>USD</span></div>
+      <div class="pill l3"><img src="https://react-circle-flags.pages.dev/gb.svg" alt=""/><span>GBP</span></div>
+      <div class="pill l4"><img src="https://react-circle-flags.pages.dev/ae.svg" alt=""/><span>AED</span></div>
+
+      <div class="pill r1"><img src="/branding/crypto/btc.svg" alt=""/><span>BTC</span></div>
+      <div class="pill r2"><img src="/branding/crypto/eth.svg" alt=""/><span>ETH</span></div>
+      <div class="pill r3"><img src="/branding/crypto/usdc.svg" alt=""/><span>USDC</span></div>
+      <div class="pill r4"><img src="/branding/crypto/usdt.svg" alt=""/><span>USDT</span></div>
+
+      <div class="hub"><img src="/branding/strivepay-mark.svg" alt="StrivePay"/></div>
+    </div>
+  </div>
+</body>
+</html>

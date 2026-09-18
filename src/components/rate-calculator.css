@@ -1,0 +1,34 @@
+.rate-calculator { padding: 24px; gap: 24px; }
+.rate-calculator-head { align-items: center; flex-wrap: wrap; padding-bottom: 20px; border-bottom: 1px solid #e0eaea; }
+.rate-calculator-direction { display: flex; background: #f0f6f5; padding: 4px; gap: 4px; margin-left: auto; }
+.rate-calculator-direction button { border: 0; background: transparent; padding: 10px 16px; color: #546d75; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.rate-calculator-direction button[aria-pressed=true] { color: #fff; background: #0a2633; }
+.rate-calculator-direction button:disabled { opacity: .5; cursor: default; }
+.rate-calculator-rate { flex-basis: 100%; font-size: 12px; color: #087580; }
+.rate-calculator-body { grid-template-columns: minmax(0,1.25fr) minmax(240px,.8fr); gap: 28px; }
+.rate-calculator-panel { gap: 0; align-content: start; padding: 0; }
+.rate-calculator-field { padding: 16px; background: #f6faf9; border: 1px solid #cbdcdd; gap: 10px; }
+.rate-calculator-field:focus-within { border-color: #099dad; box-shadow: 0 0 0 2px #099dad16; }
+.rate-calculator-field > span { font-size: 9px; color: #526d75; }
+.rate-calculator .rate-calculator-input { border: 0; padding: 0; min-height: 44px; background: transparent; grid-template-columns: minmax(0,1fr) 132px; gap: 12px; }
+.rate-calculator-input input { grid-column: 1; grid-row: 1; font-size: clamp(22px,2.5vw,30px); font-variant-numeric: tabular-nums; }
+.rate-calculator-mark { grid-column: 2; grid-row: 1; width: 28px; height: 28px; }
+.rate-calculator-input select { grid-column: 3; grid-row: 1; border: 0; background: transparent; min-width: 0; max-width: 115px; padding: 0 4px; font-size: 13px; cursor: pointer; }
+.rate-currency-control { position: relative; grid-column: 2; grid-row: 1; align-self: center; height: 44px; min-width: 0; width: 132px; display: grid; grid-template-columns: 24px minmax(0,1fr) 15px; align-items: center; column-gap: 8px; padding: 0 10px; box-sizing: border-box; background: #fff; border: 1px solid #cfdddd; }
+.rate-calculator .rate-currency-control select { position: absolute; inset: 0; grid-column: auto; grid-row: auto; z-index: 1; display: block; appearance: none; width: 100%; max-width: none; height: 100%; min-height: 0; padding: 0; border: 0; opacity: 0; border-radius: 0; font-size: 16px; margin: 0; cursor: pointer; }
+.rate-currency-control:has(select:focus-visible) { outline: 2px solid #088795; outline-offset: 3px; }
+.rate-currency-control:has(select:disabled) { opacity: .55; }
+.rate-calculator .rate-currency-label { grid-column: 2; grid-row: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 750; line-height: 1; color: #0b2633; pointer-events: none; }
+.rate-calculator .rate-currency-control .rate-calculator-mark { position: static; grid-column: 1; grid-row: 1; display: flex; align-items: center; justify-content: center; transform: none; width: 24px; height: 24px; margin: 0; pointer-events: none; }
+.rate-currency-control .rate-calculator-mark > * { width: 24px !important; height: 24px !important; }
+.rate-calculator .rate-currency-chevron { position: static; grid-column: 3; grid-row: 1; transform: none; pointer-events: none; color: #0b2633; }
+.rate-calculator-swap { justify-self: end; margin: -7px 18px; width: 32px; height: 32px; color: #087f8c; }
+.rate-calculator-meta { padding: 0 0 0 26px; border: 0; border-left: 1px solid #e0eaea; background: transparent; gap: 16px; }
+.rate-calculator-meta > div { align-items: center; min-height: 26px; font-size: 12px; }
+.rate-calculator-meta select { max-width: 65%; min-height: 36px; border: 1px solid #ccdddd; padding: 6px 10px; background: #fff; font: inherit; color: #123441; }
+.rate-calculator-error { padding: 11px 12px; background: #fff8eb; border-left: 2px solid #c69735; color: #775919; font-size: 12px; }
+.rate-calculator-disclaimer { margin: 0; font-size: 11px; line-height: 1.5; color: #637b83; }
+.rate-calculator-meta .compliance-secondary { min-height: 38px; font-size: 10px; }
+.rate-calculator :is(button,select,a):focus-visible { outline: 2px solid #088795; outline-offset: 3px; }
+@media(max-width:1000px) { .rate-calculator-body { grid-template-columns: 1fr; gap: 22px; }.rate-calculator-meta { padding: 18px 0 0; border-left: 0; border-top: 1px solid #e0eaea; } }
+@media(max-width:520px) { .rate-calculator { padding: 16px; }.rate-calculator-direction { margin-left: 0; width: 100%; }.rate-calculator-direction button { flex: 1; }.rate-calculator-field { padding: 12px; } }

@@ -1,0 +1,125 @@
+.panel {
+  width: min(680px, calc(100% - 40px));
+  margin: clamp(32px, 8vh, 96px) auto;
+  padding: clamp(24px, 5vw, 44px);
+  border: 1px solid #bdcfd1;
+  border-top: 4px solid #08a6b6;
+  background: #fff;
+  color: #0b1b35;
+}
+.emblem {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 24px;
+  background: #0b1e27;
+  color: #3bd2dc;
+}
+.eyebrow {
+  margin: 0 0 10px;
+  color: #078694;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.panel h1 {
+  margin: 0;
+  font-family: var(--font-anton-display), sans-serif;
+  font-size: clamp(27px, 4vw, 34px);
+  font-weight: 400;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+.copy {
+  max-width: 410px;
+  margin: 14px 0 0;
+  color: #51696f;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid #a9bdc0;
+  border-radius: 0;
+  color: #0b1b35;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+}
+.primary { border-color: #08a6b6; background: #08a6b6; }
+.secondary { background: #fff; }
+.primary:hover { background: #21b8c6; }
+.secondary:hover { background: #f2f8f8; }
+.primary:focus-visible,
+.secondary:focus-visible { outline: 3px solid #0b1e27; outline-offset: 3px; }
+.loading { display: flex; align-items: center; gap: 14px; min-height: 160px; }
+.loading p { margin: 0; color: #51696f; font-size: 14px; }
+.spinner { flex-shrink: 0; color: #078694; animation: spin .9s linear infinite; }
+
+.boot {
+  min-height: calc(100dvh - 24px);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 22px;
+  padding: 48px 24px;
+  background: #f7f9f9;
+  color: #0b1b35;
+}
+
+.bootMark {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+}
+
+.bootRing {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #d5e3e3;
+  border-top-color: #0da6b6;
+  border-right-color: rgba(13, 166, 182, .35);
+  border-radius: 50%;
+  animation: boot-spin .85s linear infinite;
+}
+
+.bootIcon {
+  position: relative;
+  z-index: 1;
+  width: 42px;
+  height: auto;
+}
+
+.bootLabel {
+  margin: 0;
+  color: #5f7378;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes boot-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 420px) {
+  .actions { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .bootRing { animation: none; }
+  .bootRing { border-color: #0da6b6; }
+}

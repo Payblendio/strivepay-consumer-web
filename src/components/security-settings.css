@@ -1,0 +1,50 @@
+.security-settings .security-load-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #c9d8d9;
+  background: #f6fafa;
+}
+.security-settings .account-settings-list + .security-load-state { margin-top: 16px; }
+.security-settings .security-load-state p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #51696f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.security-settings .security-load-state .compliance-secondary { min-height: 42px; }
+.security-settings .account-password-form { gap: 20px; width: 100%; max-width: 480px; }
+.security-settings .account-password-form label { min-width: 0; gap: 8px; }
+.security-settings .account-password-form label > span { color: #0b1b35; font-size: 11px; }
+.security-settings .account-password-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  border-radius: 0;
+  background: #f8fbfb;
+  color: #0b1b35;
+  font-size: 14px;
+}
+.security-settings .account-password-form input:focus-visible {
+  border-color: #08a6b6;
+  outline: 3px solid #08a6b629;
+  outline-offset: 1px;
+}
+.security-settings .account-password-form input[aria-invalid="true"] { border-color: #bf3455; }
+.security-settings .account-password-form input:disabled { opacity: .65; }
+.security-settings .security-field-hint,
+.security-settings .security-field-error { font-size: 12px; line-height: 1.5; }
+.security-settings .security-field-hint { color: #51696f; }
+.security-settings .security-field-error { color: #a42645; }
+.security-settings .account-totp-secret { overflow-wrap: anywhere; }
+.security-settings .account-password-form .compliance-primary,
+.security-settings .account-password-form .compliance-secondary { max-width: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .security-settings .spin { animation: none; }
+}
