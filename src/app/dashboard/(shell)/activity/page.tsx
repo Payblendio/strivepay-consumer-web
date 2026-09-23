@@ -26,11 +26,12 @@ type ActivityFeed={
 };
 
 function asTrade(item:ActivityFeedItem):TradeItem{
+  const direction=item.direction==="NGN_TO_CRYPTO"?"FIAT_TO_CRYPTO":item.direction==="CRYPTO_TO_NGN"?"CRYPTO_TO_FIAT":item.direction;
   return {
     id:item.id,
     status:item.status,
     createdAt:item.createdAt,
-    direction:item.direction,
+    direction,
     sourceAsset:item.sourceAsset??undefined,
     sourceAmount:item.sourceAmount??undefined,
     destinationAsset:item.destinationAsset??undefined,

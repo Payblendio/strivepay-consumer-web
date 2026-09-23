@@ -147,9 +147,11 @@ async function fetchDestinations(opts:{q:string;page:number;refresh?:boolean}){
       "Accounts timed out",
     ),
   ]);
+  const nativeListed=mapNativeDestinations(Array.isArray(nativeDestinations)?nativeDestinations:[]);
+  const nativeIds=new Set(nativeListed.map(item=>item.id));
   const mapped=sortPayoutAccounts([
-    ...mapNativeDestinations(Array.isArray(nativeDestinations)?nativeDestinations:[]),
-    ...bankAccountItems<BankAccount>(page).map(item=>({...item,native:false as const})),
+    ...nativeListed,
+    ...bankAccountItems<BankAccount>(page).filter(item=>!nativeIds.has(item.id)).map(item=>({...item,native:false as const})),
   ]);
   const needle=opts.q.trim().toLowerCase();
   const filtered=needle?mapped.filter(item=>[item.accountName,item.currency,item.accountMask,item.accountNumber].join(" ").toLowerCase().includes(needle)):mapped;
@@ -320,13 +322,15 @@ export function AccountsPage(){
       </header>
       <div className="accounts-load-error" role="alert">
         <IconAlertTriangle size={22}/>
-        <div>
+        <div className="accounts-load-error-copy">
           <strong>Accounts could not be loaded</strong>
           <p>{loadError}</p>
         </div>
-        <button type="button" className="compliance-primary" onClick={()=>{setLoading(true);void load().catch(error=>setLoadError(loadErrorMessage(error))).finally(()=>setLoading(false));}}>
-          <IconRefresh size={16}/> Try again
-        </button>
+        <div className="sell-receive-idle-actions">
+          <button type="button" className="compliance-primary" onClick={()=>{setLoading(true);void load().catch(error=>setLoadError(loadErrorMessage(error))).finally(()=>setLoading(false));}}>
+            <IconRefresh size={16}/> Try again
+          </button>
+        </div>
       </div>
     </section>;
   }
@@ -470,7 +474,7 @@ export function AccountsPage(){
                 {thirdParty?<span className="sell-destination-warning">Proceeds settle to someone else</span>:null}
                 {!ready?<span className="sell-destination-warning">Wait until Ready before sending crypto</span>:null}
               </div>
-              <span className="sell-destination-go">Create send instructions <IconArrowRight size={15}/></span>
+              <span className="sell-destination-go">Get deposit address <IconArrowRight size={15}/></span>
             </Link>
             {canMutateFinances&&!account.native&&!account.mainRecipient?<button
               type="button"

@@ -1,7 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import {BrandLogo} from "./brand-logo";
+import {ThemeToggle} from "./theme-toggle";
 import {IconCoins,IconNetwork,IconWallet,IconX} from "@tabler/icons-react";
 import type {ReactNode} from "react";
 import type {DashboardCustomer} from "@/lib/dashboard-access";
@@ -19,10 +20,11 @@ export function BuyUpdateWorkspace({customer,children}:{customer:DashboardCustom
       <div className="compliance-workspace-grid" aria-hidden="true"/>
       <header className="compliance-topbar">
         <Link className="compliance-brand" href="/dashboard" aria-label="StrivePay dashboard">
-          <Image src="/branding/strivepay-logo-dark.svg" alt="StrivePay" width={1937} height={621} priority/>
+          <BrandLogo width={1937} height={621} priority/>
         </Link>
         <div className="compliance-topbar-label"><span>Buy crypto</span><b>Destination desk</b></div>
         <div className="compliance-topbar-actions">
+          <ThemeToggle placement="header"/>
           <div className="compliance-account">
             <div><strong>{customer.givenName} {customer.familyName}</strong><small>{customer.email}</small></div>
           </div>

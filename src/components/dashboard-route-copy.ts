@@ -200,6 +200,8 @@ export function dashboardBreadcrumb(pathname:string):BreadcrumbItem[]{
     items.push({label:"Settings",href:"/dashboard/settings"},{label:"Security",href:"/dashboard/settings/security"},{label:"Signed-in devices"});
   }else if(pathname.startsWith("/dashboard/settings/security")){
     items.push({label:"Settings",href:"/dashboard/settings"},{label:"Security"});
+  }else if(pathname.startsWith("/dashboard/settings/sso")){
+    items.push({label:"Settings",href:"/dashboard/settings"},{label:"SSO settings"});
   }else if(pathname.startsWith("/dashboard/settings")){
     items.push({label:"Settings"});
   }else if(pathname.startsWith("/dashboard/profile")){
@@ -227,6 +229,7 @@ export function dashboardPageMeta(pathname:string,givenName?:string):DashboardPa
   if(pathname.startsWith("/dashboard/settings/security/authenticator"))return {title:"Authenticator",copy:"Add a 6-digit code step after your password.",active:"overview",index:"01"};
   if(pathname.startsWith("/dashboard/settings/security/sessions"))return {title:"Signed-in devices",copy:"Revoke devices you no longer use.",active:"overview",index:"01"};
   if(pathname.startsWith("/dashboard/settings/security"))return {title:"Security",copy:"Password, authenticator, and signed-in devices.",active:"overview",index:"01"};
+  if(pathname.startsWith("/dashboard/settings/sso"))return {title:"SSO settings",copy:"Connect a SAML identity provider for company sign-in.",active:"overview",index:"01"};
   if(pathname.startsWith("/dashboard/settings"))return {title:"Settings",copy:"Profile, team, security, and setup.",active:"overview",index:"01"};
   if(pathname.startsWith("/dashboard/profile"))return {title:"Profile",copy:"Your StrivePay account details.",active:"overview",index:"01"};
   return {title:"Overview",copy:givenName?`Good to see you, ${givenName}.`:"Your control desk.",active:"overview",index:"01"};
@@ -296,7 +299,13 @@ export type AccountSetupState={
   complianceStatus:string;
 };
 
-export function accountSetupHref(accountType?:string|null,accountScope?:string|null){
+export function accountSetupHref(
+  accountType?:string|null,
+  accountScope?:string|null,
+  setup?:Pick<AccountSetupState,"approved">|null,
+){
+  // Compliance lives on onboarding; money routes are configured on Accounts.
+  if(setup?.approved)return "/dashboard/accounts";
   if(accountScope==="PERSONAL")return "/onboarding/personal";
   if(accountScope==="BUSINESS")return "/onboarding/business";
   return accountType==="BUSINESS"?"/onboarding/business":"/onboarding/personal";
@@ -306,9 +315,11 @@ export function accountSetupState(
   snapshot:OnboardingSnapshot|null,
   hasPreference:boolean,
   hasPayout:boolean,
+  scope:"PERSONAL"|"BUSINESS"="PERSONAL",
 ):AccountSetupState{
   const complianceStatus=(snapshot?.complianceStatus||snapshot?.onboardingStatus||"").toUpperCase();
-  const approved=APPROVED_COMPLIANCE.has(complianceStatus);
+  // Company money routes require company ACTIVE — owner FULL_USER alone is not enough.
+  const approved=scope==="BUSINESS"?complianceStatus==="ACTIVE":APPROVED_COMPLIANCE.has(complianceStatus);
   const pending=PENDING_COMPLIANCE.has(complianceStatus);
   const failed=FAILED_COMPLIANCE.has(complianceStatus);
   return {approved,pending,failed,routesReady:approved&&hasPreference&&hasPayout,complianceStatus};

@@ -14,13 +14,15 @@ export function defaultAccountScope(hasBusinessMembership:boolean):AccountScope{
 }
 
 export function hasBusinessMembershipHint(customer:{
+  accountType?:string|null;
   hasBusinessMembership?:boolean;
   membershipRole?:string|null;
   organizationLegalName?:string|null;
   availableContexts?:string[]|null;
 }){
   return Boolean(
-    customer.hasBusinessMembership
+    customer.accountType==="BUSINESS"
+    ||customer.hasBusinessMembership
     ||customer.membershipRole
     ||customer.organizationLegalName
     ||customer.availableContexts?.includes("BUSINESS"),

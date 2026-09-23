@@ -130,13 +130,14 @@ type SetupLeadCopy={
   stage:"compliance"|"routes";
 };
 
-function setupLeadCopy(setup:AccountSetupState):SetupLeadCopy{
+function setupLeadCopy(setup:AccountSetupState,accountScope?:string|null):SetupLeadCopy{
   if(!setup.approved){
-    if(setup.pending)return {eyebrow:"COMPLIANCE",status:"In review",title:"We’re checking your details",detail:"You can leave this page. We’ll keep your place.",action:"Check verification",stage:"compliance"};
-    if(setup.failed)return {eyebrow:"COMPLIANCE",status:"Action needed",title:"Review your verification",detail:"Check the details you submitted, then continue the secure identity check.",action:"Continue compliance",stage:"compliance"};
-    return {eyebrow:"COMPLIANCE",status:"Action needed",title:"Verify your identity",detail:"Complete one secure check before your money routes can open.",action:"Continue compliance",stage:"compliance"};
+    const business=accountScope==="BUSINESS";
+    if(setup.pending)return {eyebrow:"COMPLIANCE",status:"In review",title:business?"We’re checking your company":"We’re checking your details",detail:"You can leave this page. We’ll keep your place.",action:"Check verification",stage:"compliance"};
+    if(setup.failed)return {eyebrow:"COMPLIANCE",status:"Action needed",title:business?"Review company verification":"Review your verification",detail:business?"Check the company details you submitted, then continue verification.":"Check the details you submitted, then continue the secure identity check.",action:"Continue compliance",stage:"compliance"};
+    return {eyebrow:"COMPLIANCE",status:"Action needed",title:business?"Finish company verification":"Verify your identity",detail:business?"Complete company details and verification before money routes can open.":"Complete one secure check before your money routes can open.",action:"Continue compliance",stage:"compliance"};
   }
-  return {eyebrow:"MONEY ROUTES",status:"Action needed",title:"Connect your money routes",detail:"Choose where buys arrive and where sales settle.",action:"Continue setup",stage:"routes"};
+  return {eyebrow:"MONEY ROUTES",status:"Action needed",title:"Connect your money routes",detail:"Choose where buys arrive and where sales settle.",action:"Set up accounts",stage:"routes"};
 }
 
 export function DashboardOverview({trades,tradeDataAvailable,partialData=false,historyLimited=false}:DashboardOverviewProps){
@@ -149,8 +150,8 @@ export function DashboardOverview({trades,tradeDataAvailable,partialData=false,h
   const chart=useMemo(()=>tradeChartData(trades),[trades]);
   const usesUpdatedDates=trades.some(trade=>trade.dateBasis==="updated");
   const recent=useMemo(()=>[...trades].sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).slice(0,5),[trades]);
-  const setupHref=accountSetupHref(customer.accountType,accountScope);
-  const setupLead=setup?setupLeadCopy(setup):null;
+  const setupHref=accountSetupHref(customer.accountType,accountScope,setup);
+  const setupLead=setup?setupLeadCopy(setup,accountScope):null;
   const showRequests=setup&&!setup.routesReady;
 
   return <section className="dashboard-canvas dashboard-route-page overview-workspace" aria-labelledby="overview-title">

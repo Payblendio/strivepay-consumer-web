@@ -1,15 +1,14 @@
 "use client";
 
-import {FormEvent,useCallback,useEffect,useMemo,useRef,useState} from "react";
+import {FormEvent,useCallback,useEffect,useRef,useState} from "react";
 import Link from "next/link";
 import {
-  IconArrowLeft,IconArrowRight,IconBuilding,IconCheck,IconExternalLink,IconFileCheck,
-  IconFingerprint,IconId,IconLoader2,IconLock,IconMail,IconRefresh,IconShieldCheck,
-  IconMapPin,IconUserCheck,
+  IconArrowLeft,IconArrowRight,IconBuilding,IconExternalLink,IconFileCheck,
+  IconFingerprint,IconId,IconLoader2,IconMail,IconRefresh,IconShieldCheck,
+  IconMapPin,
 } from "@tabler/icons-react";
 import {isValidPhoneNumber,type Country,type Value} from "react-phone-number-input";
 import {SumsubVerification} from "@/components/sumsub-verification";
-import {PersonalMoneyRoutes} from "@/components/personal-money-routes";
 import {DateOfBirthPicker} from "@/components/ui/date-of-birth-picker";
 import {CountrySelect} from "@/components/ui/country-select";
 import {InternationalPhoneField} from "@/components/ui/international-phone-field";
@@ -82,19 +81,21 @@ function useJourneyError(){
   return useCallback((message:string)=>{if(message)show({tone:"danger",title:"Check this step",message});},[show]);
 }
 
-function JourneyBody({eyebrow,title,statusLabel,steps,active,children,aside}:{eyebrow:string;title:string;statusLabel:string;steps:Step[];active:number;children:React.ReactNode;aside?:React.ReactNode}){
-  return <div className="compliance-window-body compliance-journey-body">
+function JourneyBody({eyebrow,title,statusLabel,steps,active,children,aside,focusMode}:{eyebrow:string;title:string;statusLabel:string;steps:Step[];active:number;children:React.ReactNode;aside?:React.ReactNode;focusMode?:boolean}){
+  const total=steps.length;
+  const stepIndex=Math.min(Math.max(active,0),Math.max(total-1,0));
+  const showProgress=active>=0&&active<total;
+  if(focusMode)return <div className="compliance-idv-focus" role="dialog" aria-label="Identity verification">{children}</div>;
+  return <div className="compliance-window-body compliance-journey-body compliance-journey-simple">
     <section className="compliance-form-panel">
       <header className="compliance-form-heading"><div><span>{eyebrow}</span><h2>{title}</h2></div><p><i className={statusLabel==="Complete"?"complete":""}/>{statusLabel}</p></header>
+      {showProgress?<div className="compliance-journey-progress" aria-label={`Step ${stepIndex+1} of ${total}`}>
+        <div className="compliance-journey-progress-meta"><strong>Step {stepIndex+1} of {total}</strong><span>{steps[stepIndex]?.title}</span></div>
+        <div className="compliance-journey-progress-track" aria-hidden="true"><span style={{width:`${((stepIndex+1)/total)*100}%`}}/></div>
+      </div>:null}
       {children}
-    </section>
-    <aside className="compliance-journey-steps" aria-label="Setup progress">
-      <ol>{steps.map((step,index)=><li className={index<active?"done":index===active?"current":""} key={step.title}>
-        <span className="compliance-journey-step-icon">{index<active?<IconCheck size={16}/>:step.icon}</span>
-        <div><small>{String(index+1).padStart(2,"0")}</small><strong>{step.title}</strong><p>{step.detail}</p></div>
-      </li>)}</ol>
       {aside}
-    </aside>
+    </section>
   </div>;
 }
 
@@ -124,7 +125,7 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
   const refreshStatus=useCallback(async(silent=false)=>{
     try{
       const response=await api<Status>("");setStatus(response);
-      if(APPROVED_PERSONAL.has(response.complianceStatus)){setActive(6);if(!ownerMode)onApproved?.();}
+      if(APPROVED_PERSONAL.has(response.complianceStatus)){setActive(6);onApproved?.();}
       else if(PENDING_PERSONAL.has(response.complianceStatus)){setActive(6);setSubmitted(true);}
       else setActive(5);
     }catch(problem){if(!(problem instanceof JourneyError&&problem.status===400)&&!silent)setError(problem instanceof Error?problem.message:"Could not load your progress");}
@@ -163,6 +164,8 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
     finally{setBusy(false);}
   },[setError]);
 
+  useEffect(()=>{if(active!==4||otpSent||sessionVerified)return;void sendOtp();},[active,otpSent,sessionVerified,sendOtp]);
+
   async function createProfile(){
     const characterError=addressCharacterError(draft.address,"Residential address")||(!draft.mailingSame?addressCharacterError(draft.mailingAddress,"Mailing address"):null);
     if(characterError){setError(characterError);setActive(1);return;}
@@ -174,7 +177,7 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
     try{
       if(hashesRequired)await api("/legal-acceptances",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({documentIds:documents.map(item=>item.id)})});
       const created=await api<Status>("/profile",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(verificationPayload())});
-      setStatus(created);setRepairingApplicant(false);setApplicantReady(true);setActive(5);
+      setStatus(created);setRepairingApplicant(false);setApplicantReady(true);setActive(4);setOtpSent(false);setSessionVerified(false);
     }catch(problem){setError(problem instanceof Error?problem.message:"Your profile could not be created");}
     finally{setBusy(false);}
   }
@@ -208,7 +211,7 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
 
   async function completeSimulation(){
     setBusy(true);setError("");
-    try{const value=await api<Status>("/simulator/compliance",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"FULL_USER"})});setStatus(value);setActive(6);if(!ownerMode)onApproved?.();}
+    try{const value=await api<Status>("/simulator/compliance",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"FULL_USER"})});setStatus(value);setActive(6);onApproved?.();}
     catch(problem){setError(problem instanceof Error?problem.message:"The simulated check could not finish");}
     finally{setBusy(false);}
   }
@@ -220,10 +223,15 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
   const approved=Boolean(status&&APPROVED_PERSONAL.has(status.complianceStatus));
   const statusLabel=approved?"Complete":active===6?"In review":active>0?"In progress":"Not started";
 
-  const checkEyebrow=memberMode?"YOUR CHECK":ownerMode?"OWNER CHECK":"NEXT UP";
+  const checkEyebrow=memberMode?"YOUR CHECK":ownerMode?"OWNER CHECK":"PERSONAL CHECK";
   const verifiedTitle=memberMode?"Identity verified":ownerMode?"Owner verified":"You’re verified";
-  return <JourneyBody eyebrow={checkEyebrow} title={approved?verifiedTitle:personalSteps[Math.min(active,5)].title} statusLabel={statusLabel} steps={personalSteps} active={active} aside={<p className="compliance-privacy"><IconLock size={14}/>Nigerian BVN/NIN is encrypted for NGN banking and also sent to verification partners. We never show the full number again.</p>}>
-    {active===0?<form className="compliance-form" onSubmit={profileNext} noValidate>
+  const idvFocus=Boolean(identityToken&&!identityToken.startsWith("sim-verification-"));
+  return <JourneyBody eyebrow={checkEyebrow} title={approved?verifiedTitle:personalSteps[Math.min(active,5)].title} statusLabel={statusLabel} steps={personalSteps} active={active} focusMode={idvFocus}>
+    {idvFocus?<div className="compliance-idv-focus-panel">
+      <button type="button" className="compliance-secondary compliance-idv-close" onClick={()=>setIdentityToken("")}><IconArrowLeft size={16}/> Close</button>
+      <SumsubVerification token={identityToken} onSubmitted={idvSubmitted} onError={idvError}/>
+    </div>:null}
+    {!idvFocus&&active===0?<form className="compliance-form" onSubmit={profileNext} noValidate>
       <p className="compliance-form-copy">{memberMode?"Confirm your details for company financial access.":"Check these details before verification."}</p>
       <div className={`compliance-form-grid${identityLabel?"":" compliance-form-grid-no-identity"}`}>
         <Field label="First name"><input autoComplete="given-name" value={draft.firstName} onChange={event=>update("firstName",event.target.value)} required/></Field>
@@ -235,7 +243,7 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
       <div className="compliance-form-actions"><button className="compliance-primary" type="submit" disabled={busy}>{busy?<IconLoader2 className="spin" size={17}/>:null}Save and continue <IconArrowRight size={17}/></button></div>
     </form>:null}
 
-    {active===1?<form className="compliance-form" onSubmit={addressNext} noValidate>
+    {!idvFocus&&active===1?<form className="compliance-form" onSubmit={addressNext} noValidate>
       <p className="compliance-form-copy">Use the home address on your verification document.</p>
       <div className="compliance-address-heading"><span><IconMapPin size={17}/>Residential address</span><b>{draft.country}</b></div>
       <div className="compliance-form-grid">
@@ -254,7 +262,7 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
       <div className="compliance-form-actions"><button className="compliance-secondary" type="button" onClick={back}><IconArrowLeft size={17}/> Back</button><button className="compliance-primary" type="submit" disabled={busy}>{busy?<IconLoader2 className="spin" size={17}/>:null}Save address <IconArrowRight size={17}/></button></div>
     </form>:null}
 
-    {active===2?<form className="compliance-form" onSubmit={purposeNext} noValidate>
+    {!idvFocus&&active===2?<form className="compliance-form" onSubmit={purposeNext} noValidate>
       <p className="compliance-form-copy">{memberMode?"Tell us how you plan to fund and use this company account.":"Tell us how you plan to fund and use your account."}</p>
       <div className="compliance-form-grid compliance-purpose-grid">
         <Field label="Source of funds"><select value={draft.sourceOfFunds} onChange={e=>update("sourceOfFunds",e.target.value)} required><option value="">Choose a source</option><option value="SALARY">Salary</option><option value="BUSINESS_INCOME">Business income</option><option value="PENSION">Pension</option><option value="OTHER">Other</option></select></Field>
@@ -264,12 +272,12 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
       <div className="compliance-form-actions"><button className="compliance-secondary" type="button" onClick={back}><IconArrowLeft size={17}/> Back</button><button className="compliance-primary" type="submit" disabled={busy}>{busy?<IconLoader2 className="spin" size={17}/>:null}Continue <IconArrowRight size={17}/></button></div>
     </form>:null}
 
-    {active===3?<div className="compliance-form">
+    {!idvFocus&&active===3?<div className="compliance-form">
       <AgreementReview legal={legal} consent={consent} onConsent={setConsent}/>
       <div className="compliance-form-actions"><button className="compliance-secondary" type="button" onClick={back}><IconArrowLeft size={17}/> Back</button><button className="compliance-primary" type="button" disabled={busy||!legal.ready} onClick={()=>void createProfile()}>{busy?<IconLoader2 className="spin" size={17}/>:null}{documents.length>0?"Create profile":"Continue to verification"}</button></div>
     </div>:null}
 
-    {active===4?<form className="compliance-form compliance-otp-form" onSubmit={verifyOtp} noValidate>
+    {!idvFocus&&active===4?<form className="compliance-form compliance-otp-form" onSubmit={verifyOtp} noValidate>
       <span className="compliance-form-emblem"><IconMail size={28}/></span><h3>Check your email</h3><p className="compliance-form-copy">{otpSent?<>Enter the 6-digit code sent to <strong>{customer.email}</strong>.</>:<>We’ll send a security code to <strong>{customer.email}</strong>. Tap Send code to continue.</>}</p>
       {!otpSent?<button className="compliance-primary" type="button" disabled={busy} onClick={()=>void sendOtp()}>{busy?<IconLoader2 className="spin" size={17}/>:null}Send code</button>:sessionVerified?<><p className="compliance-form-copy">Code verified. Continue to finish your secure profile.</p><div className="compliance-form-actions"><button className="compliance-primary" type="submit" disabled={busy}>{busy?<IconLoader2 className="spin" size={17}/>:null}Continue</button></div></>:<>
         <input className="compliance-otp" aria-label="Email verification code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,""))} autoFocus/>
@@ -277,16 +285,16 @@ function PersonalJourney({customer,ownerMode,memberMode,onApproved,onProfileSave
       </>}
     </form>:null}
 
-    {active===5?<div className="compliance-form">
+    {!idvFocus&&active===5?<div className="compliance-form">
       {!identityToken&&status?.complianceStatus==="KYC_NEEDED"?<button className="compliance-secondary" type="button" disabled={busy} onClick={()=>{setError("");setActive(1);}}>Review address</button>:null}
-      {!identityToken?<div className="compliance-idv-intro"><span className="compliance-form-emblem"><IconFingerprint size={30}/></span><h3>One secure identity check</h3><p className="compliance-form-copy">Have a valid ID ready. Your documents are checked securely.</p><button className="compliance-primary" type="button" disabled={busy} onClick={()=>void startIdentity()}>{busy?<IconLoader2 className="spin" size={17}/>:null}Start identity check <IconArrowRight size={17}/></button></div>:identityToken.startsWith("sim-verification-")?<div className="compliance-idv-intro"><span className="compliance-form-emblem"><IconShieldCheck size={30}/></span><h3>Simulator check ready</h3><p className="compliance-form-copy">No identity document is collected in local simulator mode.</p><button className="compliance-primary" type="button" disabled={busy} onClick={()=>void completeSimulation()}>{busy?<IconLoader2 className="spin" size={17}/>:null}Complete simulated check</button></div>:<SumsubVerification token={identityToken} onSubmitted={idvSubmitted} onError={idvError}/>}
+      {!identityToken?<div className="compliance-idv-intro"><span className="compliance-form-emblem"><IconFingerprint size={30}/></span><h3>One secure identity check</h3><p className="compliance-form-copy">Have a valid ID ready. Your documents are checked securely.</p><button className="compliance-primary" type="button" disabled={busy} onClick={()=>void startIdentity()}>{busy?<IconLoader2 className="spin" size={17}/>:null}Start identity check <IconArrowRight size={17}/></button></div>:identityToken.startsWith("sim-verification-")?<div className="compliance-idv-intro"><span className="compliance-form-emblem"><IconShieldCheck size={30}/></span><h3>Simulator check ready</h3><p className="compliance-form-copy">No identity document is collected in local simulator mode.</p><button className="compliance-primary" type="button" disabled={busy} onClick={()=>void completeSimulation()}>{busy?<IconLoader2 className="spin" size={17}/>:null}Complete simulated check</button></div>:null}
     </div>:null}
 
-    {active===6?<div className="compliance-complete compliance-complete-centered">
+    {!idvFocus&&active===6?<div className="compliance-complete compliance-complete-centered">
       {approved?<StatusIllustration status="kyc" size={168}/>:<span className="pending"><IconRefresh size={28}/></span>}
       <h3>{approved?(memberMode?"Identity verified":ownerMode?"You’re verified":"You’re verified"):"We’re checking your details"}</h3>
-      <p>{approved?(memberMode?"Company money routes unlock once your identity is linked.":ownerMode?"Next, finish the company record so money routes can open.":"Bank and crypto routes are ready whenever you are."):submitted?"You can leave this page. We’ll keep your place.":"Your check is still being processed."}</p>
-      <div className="compliance-form-actions">{!approved?<button className="compliance-secondary" type="button" onClick={()=>void refreshStatus()}><IconRefresh size={16}/> Refresh status</button>:<button className="compliance-primary" type="button" onClick={()=>onApproved?.()}>Set up money routes <IconArrowRight size={17}/></button>}</div>
+      <p>{approved?(memberMode?"Next, open Accounts to set your personal money routes.":ownerMode?"Next, finish the company record.":"Next, open Accounts to set pay-in and payout routes."):submitted?"You can leave this page. We’ll keep your place.":"Your check is still being processed."}</p>
+      <div className="compliance-form-actions">{!approved?<button className="compliance-secondary" type="button" onClick={()=>void refreshStatus()}><IconRefresh size={16}/> Refresh status</button>:ownerMode?<button className="compliance-primary" type="button" onClick={()=>onApproved?.()}>Continue to company <IconArrowRight size={17}/></button>:memberMode?<button className="compliance-primary" type="button" onClick={()=>onApproved?.()}>Continue <IconArrowRight size={17}/></button>:<Link className="compliance-primary" href="/dashboard/accounts">Set up accounts <IconArrowRight size={17}/></Link>}</div>
     </div>:null}
   </JourneyBody>;
 }
@@ -345,15 +353,15 @@ function CompanyJourney({customer,onApproved}:{customer:Customer;onApproved?:()=
   }
 
   if(loading)return <JourneyBody eyebrow="Company" title="Finding your place" statusLabel="Loading" steps={companySteps} active={0}><div className="compliance-loading"><IconLoader2 className="spin"/>Loading company setup…</div></JourneyBody>;
-  if(approved)return <JourneyBody eyebrow="COMPANY SETUP" title="Company approved" statusLabel="Complete" steps={companySteps} active={4} aside={<p className="compliance-privacy"><IconUserCheck size={14}/>The verified owner stays attached to this company.</p>}>
+  if(approved)return <JourneyBody eyebrow="COMPANY CHECK" title="Company approved" statusLabel="Complete" steps={companySteps} active={4}>
     <div className="compliance-complete compliance-complete-centered">
       <StatusIllustration status="kyb" size={168}/>
       <h3>Company approved</h3>
-      <p>Next, set company money routes so buying and selling can open.</p>
-      <div className="compliance-form-actions"><button className="compliance-primary" type="button" onClick={()=>onApproved?.()}>Set up money routes <IconArrowRight size={17}/></button></div>
+      <p>Next, open Accounts to set company pay-in and payout routes.</p>
+      <div className="compliance-form-actions"><button className="compliance-primary" type="button" onClick={()=>onApproved?.()}>Continue <IconArrowRight size={17}/></button></div>
     </div>
   </JourneyBody>;
-  return <JourneyBody eyebrow="COMPANY SETUP" title={active<4?companySteps[active].title:"Company review"} statusLabel={active===4?"In review":"In progress"} steps={companySteps} active={active} aside={<p className="compliance-privacy"><IconUserCheck size={14}/>The verified owner stays attached to this company.</p>}>
+  return <JourneyBody eyebrow="COMPANY CHECK" title={active<4?companySteps[active].title:"Company review"} statusLabel={active===4?"In review":"In progress"} steps={companySteps} active={active}>
     {active===0?<form className="compliance-form" onSubmit={saveRecord} noValidate><p className="compliance-form-copy">Use the company name and number exactly as registered.</p><div className="compliance-form-grid">
       <Field label="Legal company name"><input value={draft.legalName} onChange={e=>update("legalName",e.target.value)} required/></Field><Field label="Registration number"><input value={draft.registrationNumber} onChange={e=>update("registrationNumber",e.target.value)} required/></Field><CountrySelect value={draft.incorporationCountry} onChange={value=>update("incorporationCountry",value)} label="Incorporation country" className="compliance-country-field" modalClassName="compliance-selector-dialog"/>
     </div><div className="compliance-form-actions"><button className="compliance-primary" disabled={busy} type="submit">{busy?<IconLoader2 className="spin" size={17}/>:null}Save company <IconArrowRight size={17}/></button></div></form>:null}
@@ -368,74 +376,55 @@ function CompanyJourney({customer,onApproved}:{customer:Customer;onApproved?:()=
   </JourneyBody>;
 }
 
-function SetupCompletePanel({kind}:{kind:"kyc"|"kyb"}){
+function SetupHandoff({kind}:{kind:"kyc"|"kyb"|"member"}){
   return <div className="compliance-setup-done">
-    <StatusIllustration status={kind} size={220}/>
-    <small>SETUP COMPLETE</small>
-    <h2>{kind==="kyb"?"Company setup is complete":"You’re ready to move money"}</h2>
-    <p>{kind==="kyb"?"Compliance, company checks, and money routes are in place. Open the dashboard to buy or sell.":"Compliance and money routes are in place. Open the dashboard to buy or sell."}</p>
-    <Link className="compliance-primary" href="/dashboard">Open dashboard <IconArrowRight size={17}/></Link>
+    <StatusIllustration status={kind==="kyb"?"kyb":"kyc"} size={220}/>
+    <small>{kind==="kyb"?"COMPANY VERIFIED":"YOU’RE VERIFIED"}</small>
+    <h2>{kind==="kyb"?"Company check complete":"Verification complete"}</h2>
+    <p>{kind==="kyb"?"Open Accounts to set company pay-in and payout routes, or go straight to the dashboard.":kind==="member"?"Open Accounts to finish your personal money routes, then return to the company workspace when you need it.":"Open Accounts to set pay-in and payout routes, or go straight to the dashboard."}</p>
+    <div className="compliance-form-actions compliance-handoff-actions">
+      <Link className="compliance-primary" href="/dashboard/accounts">Set up accounts <IconArrowRight size={17}/></Link>
+      <Link className="compliance-secondary" href="/dashboard">Open dashboard</Link>
+    </div>
   </div>;
 }
 
 export function ComplianceJourney({accountType,membershipRole,initialComplianceApproved=false,onProfileSaved,...customer}:Customer&{accountType:"PERSONAL"|"BUSINESS";membershipRole?:string|null;initialComplianceApproved?:boolean;onProfileSaved?:(profile:Customer)=>void}){
   const business=accountType==="BUSINESS";
   const memberIdentity=business&&Boolean(membershipRole)&&membershipRole!=="OWNER";
-  const [ownerApproved,setOwnerApproved]=useState(accountType==="PERSONAL");
+  const [ownerApproved,setOwnerApproved]=useState(accountType==="PERSONAL"||Boolean(initialComplianceApproved));
   const [companyApproved,setCompanyApproved]=useState(memberIdentity);
-  const [personalApproved,setPersonalApproved]=useState(initialComplianceApproved);
-  const [personalRoutesReady,setPersonalRoutesReady]=useState(false);
-  const [companyRoutesReady,setCompanyRoutesReady]=useState(false);
-  const [companyCanEdit,setCompanyCanEdit]=useState(false);
-  const [companyAccessMessage,setCompanyAccessMessage]=useState<string|null>(null);
-  const [companyAccessReady,setCompanyAccessReady]=useState(false);
-  const complianceDone=business?(memberIdentity?ownerApproved:companyApproved):personalApproved;
-  const routesReady=memberIdentity?companyRoutesReady:(business?companyApproved&&personalRoutesReady:personalRoutesReady);
-  // For non-member business owner: money routes after company; for personal: after KYC
-  const ownerRoutesPhase=business&&!memberIdentity&&companyApproved&&!personalRoutesReady;
-  const memberPersonalRoutesPhase=memberIdentity&&ownerApproved&&!personalRoutesReady;
-  const memberCompanyRoutesPhase=memberIdentity&&personalRoutesReady&&!companyRoutesReady;
-  const phase=routesReady?2:complianceDone?1:0;
-  const hero=useMemo(()=>{
-    if(memberCompanyRoutesPhase)return {eyebrow:"BUSINESS / COMPANY ROUTES",title:<>COMPANY ROUTES.<br/>THEN DECIDE.</>,copy:companyCanEdit?"Review company pay-in, payout, and token preferences. Update them if you need to.":(companyAccessMessage||"Review what the company already has. Editing needs administrator financial access.")};
-    if(memberPersonalRoutesPhase||(phase===1&&!memberIdentity))return {eyebrow:memberIdentity?"PERSONAL / MONEY ROUTES":business?"BUSINESS / MONEY ROUTES":"PERSONAL / MONEY ROUTES",title:<>SET ROUTES.<br/>THEN MOVE.</>,copy:memberIdentity?"These money routes belong to you personally, not the company.":"Choose crypto delivery and where sales settle."};
-    if(memberIdentity)return {eyebrow:"BUSINESS / YOUR IDENTITY",title:<>VERIFY YOURSELF.<br/>THEN ACCESS.</>,copy:"Company compliance is already complete. Finish your identity check, then set your personal routes."};
-    if(business)return {eyebrow:"BUSINESS / OWNER + COMPANY",title:<>OWNER FIRST.<br/>BUSINESS NEXT.</>,copy:"Verify the owner, then the company."};
-    return {eyebrow:"PERSONAL / COMPLIANCE",title:<>VERIFY.<br/>THEN MOVE.</>,copy:"Confirm your details to unlock transactions."};
-  },[business,companyAccessMessage,companyCanEdit,memberCompanyRoutesPhase,memberIdentity,memberPersonalRoutesPhase,phase]);
-  const phases=[{title:"Compliance",detail:memberIdentity?"Your identity":business?"Owner + company":"Identity check"},{title:"Money routes",detail:memberIdentity?"Personal, then company":"Crypto + payout"},{title:"Ready",detail:"Start moving"}];
+  const [personalApproved,setPersonalApproved]=useState(initialComplianceApproved&&!business);
 
   useEffect(()=>{
-    if(!memberCompanyRoutesPhase){setCompanyAccessReady(false);return;}
-    let cancelled=false;
-    setCompanyAccessReady(false);
-    void customerFetch("/api/corporate/members/me/financial-access",{headers:{Accept:"application/json"}}).then(async response=>{
-      const body=await response.json().catch(()=>null) as {eligible?:boolean;message?:string;code?:string}|null;
-      if(cancelled)return;
-      setCompanyCanEdit(Boolean(response.ok&&body?.eligible));
-      setCompanyAccessMessage(body?.message??(response.ok?null:"Company financial access could not be checked."));
-      setCompanyAccessReady(true);
-    }).catch(()=>{if(!cancelled){setCompanyCanEdit(false);setCompanyAccessMessage("Company financial access could not be checked.");setCompanyAccessReady(true);}});
-    return()=>{cancelled=true;};
-  },[memberCompanyRoutesPhase]);
+    if(memberIdentity&&initialComplianceApproved)setOwnerApproved(true);
+    if(!business&&initialComplianceApproved)setPersonalApproved(true);
+  },[business,initialComplianceApproved,memberIdentity]);
 
-  if(routesReady){
+  if(business&&!memberIdentity&&companyApproved){
     return <div className="compliance-window compliance-window-done" aria-labelledby="compliance-title">
-      <h1 id="compliance-title" className="sr-only">Setup complete</h1>
-      <SetupCompletePanel kind={business&&!memberIdentity?"kyb":"kyc"}/>
+      <h1 id="compliance-title" className="sr-only">Company verified</h1>
+      <SetupHandoff kind="kyb"/>
+    </div>;
+  }
+  if(memberIdentity&&ownerApproved){
+    return <div className="compliance-window compliance-window-done" aria-labelledby="compliance-title">
+      <h1 id="compliance-title" className="sr-only">Identity verified</h1>
+      <SetupHandoff kind="member"/>
+    </div>;
+  }
+  if(!business&&personalApproved){
+    return <div className="compliance-window compliance-window-done" aria-labelledby="compliance-title">
+      <h1 id="compliance-title" className="sr-only">Verification complete</h1>
+      <SetupHandoff kind="kyc"/>
     </div>;
   }
 
-  return <div className="compliance-window">
-    <header className="compliance-window-hero"><div><span>{hero.eyebrow}</span><h1 id="compliance-title">{hero.title}</h1><p>{hero.copy}</p></div><div className="compliance-step-number" aria-hidden="true"><small>Setup phase</small><strong>{String(phase+1).padStart(2,"0")}</strong><span>of 03</span></div></header>
-    <ol className="compliance-phase-rail" aria-label="Account setup phases">{phases.map((item,index)=><li className={index===phase?"active":index<phase?"done":""} key={item.title}><span>{String(index+1).padStart(2,"0")}</span><div><strong>{item.title}</strong><small>{item.detail}</small></div></li>)}</ol>
+  return <div className="compliance-window compliance-window-simple">
+    <h1 id="compliance-title" className="sr-only">{business?(memberIdentity?"Verify your identity":ownerApproved?"Company verification":"Owner verification"):"Personal verification"}</h1>
     {business&&!ownerApproved?<PersonalJourney customer={customer} ownerMode={!memberIdentity} memberMode={memberIdentity} onApproved={()=>setOwnerApproved(true)} onProfileSaved={onProfileSaved}/>
       :business&&!companyApproved?<CompanyJourney customer={customer} onApproved={()=>setCompanyApproved(true)}/>
-      :memberPersonalRoutesPhase?<PersonalMoneyRoutes customer={customer} accountScope="PERSONAL" onComplete={()=>setPersonalRoutesReady(true)}/>
-      :memberCompanyRoutesPhase?!companyAccessReady?<div className="compliance-loading"><IconLoader2 className="spin"/>Checking company access…</div>
-        :<PersonalMoneyRoutes key={companyCanEdit?"edit":"view"} customer={customer} accountScope="BUSINESS" readOnly={!companyCanEdit} titleEyebrow="COMPANY ROUTES" onComplete={()=>setCompanyRoutesReady(true)}/>
-      :ownerRoutesPhase||(!business&&complianceDone&&!personalRoutesReady)?<PersonalMoneyRoutes customer={customer} accountScope={business?"BUSINESS":"PERSONAL"} onComplete={()=>setPersonalRoutesReady(true)}/>
-      :!business&&!personalApproved?<PersonalJourney customer={customer} onApproved={()=>setPersonalApproved(true)} onProfileSaved={onProfileSaved}/>
+      :!business?<PersonalJourney customer={customer} onApproved={()=>setPersonalApproved(true)} onProfileSaved={onProfileSaved}/>
       :null}
   </div>;
 }

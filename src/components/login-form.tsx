@@ -10,6 +10,7 @@ import {
   IconEye,
   IconEyeOff,
   IconLoader2,
+  IconShieldLock,
 } from "@tabler/icons-react";
 import {z} from "zod";
 import {destinationAfterLogin,loginSchema} from "@/lib/auth-access";
@@ -33,11 +34,13 @@ export function LoginForm({returnTo,sessionExpired=false}:{returnTo:string;sessi
   const{
     register,
     handleSubmit,
+    watch,
     formState:{errors,isSubmitting},
   }=useForm<LoginValues>({
     resolver:zodResolver(loginSchema),
     defaultValues:{email:"",password:""},
   });
+  const watchedEmail=watch("email");
 
   useEffect(()=>{
     if(sessionExpired)show({tone:"warning",title:"Session expired",message:"Sign in to continue."});
@@ -63,6 +66,11 @@ export function LoginForm({returnTo,sessionExpired=false}:{returnTo:string;sessi
         if(data.type==="email_verification_required"){
           storeVerificationChallenge(data.email??email,data.verificationChallengeId);
           window.location.assign(`/verify-email?email=${encodeURIComponent(data.email??email)}`);
+          return;
+        }
+        const detail=String(data.detail??data.title??"").toLowerCase();
+        if(response.status===409&&detail.includes("single sign-on")){
+          setError("This work email uses company SSO. Sign in with SSO — no StrivePay password needed.");
           return;
         }
         setError(response.status===429
@@ -236,7 +244,17 @@ export function LoginForm({returnTo,sessionExpired=false}:{returnTo:string;sessi
         </button>
       </form>
 
-      <p className="access-card-footer">
+      <div className="access-auth-alternative" aria-hidden="true"><span>or</span></div>
+      <Link
+        className="access-secondary-button access-sso-button"
+        href={watchedEmail.trim()?`/auth/sso?email=${encodeURIComponent(watchedEmail.trim().toLowerCase())}`:"/auth/sso"}
+      >
+        <IconShieldLock size={20}/>
+        <span>Sign in with SSO</span>
+        <IconArrowRight size={18}/>
+      </Link>
+
+      <p className="access-card-footer access-login-footer">
         New to StrivePay? <Link href="/register">Create an account</Link>
       </p>
     </section>

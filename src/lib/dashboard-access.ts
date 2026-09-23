@@ -133,6 +133,12 @@ export async function resolveDashboardAccountScope(customer:DashboardCustomer):P
   const jar=await cookies();
   const fromCookie=parseAccountScope(jar.get(ACCOUNT_SCOPE_COOKIE)?.value);
   const hasMembership=hasBusinessMembershipHint(customer);
+  const dualContext=Boolean(
+    customer.availableContexts?.includes("PERSONAL")
+    &&customer.availableContexts?.includes("BUSINESS"),
+  );
+  // Pure business accounts stay in company context through company KYB — don't honor a stale PERSONAL cookie.
+  if(customer.accountType==="BUSINESS"&&!dualContext)return "BUSINESS";
   if(fromCookie==="BUSINESS"&&!hasMembership)return "PERSONAL";
   return fromCookie??defaultAccountScope(hasMembership);
 }
@@ -153,8 +159,9 @@ export function hasBusinessContext(customer:DashboardCustomer){
 
 export async function loadAccountSetup(token:string,scope:AccountScope="PERSONAL"):Promise<AccountSetupLoad>{
   const scopeHeaders={[ACCOUNT_SCOPE_HEADER]:scope};
+  const onboardingPath=scope==="BUSINESS"?"/v1/onboarding/business/status":"/v1/onboarding";
   const [onboarding,preferences,bankAccounts,nativeDestinations,financialAccess]=await Promise.all([
-    backendJson<OnboardingSnapshot>(token,"/v1/onboarding",scope==="PERSONAL"?scopeHeaders:{}),
+    backendJson<OnboardingSnapshot>(token,onboardingPath,scopeHeaders),
     backendJson<PreferenceRow[]>(token,"/v1/onboarding/money-routes/crypto",scopeHeaders),
     backendJson<unknown>(token,"/v1/bank-accounts?size=100",scopeHeaders),
     backendJson<unknown[]>(token,"/v1/onboarding/money-routes/native-destinations",scopeHeaders),
@@ -164,9 +171,11 @@ export async function loadAccountSetup(token:string,scope:AccountScope="PERSONAL
   let snapshot:OnboardingSnapshot;
   if(onboarding.ok&&validSnapshot(onboarding.value))snapshot=onboarding.value;
   else if(incompleteSetup(onboarding)||accessBlocked(onboarding)){
-    if(scope==="BUSINESS"&&financialAccess.ok&&financialAccess.value?.eligible)snapshot={complianceStatus:"FULL_USER",onboardingStatus:"ACTIVE"};
-    else if(scope==="BUSINESS"&&financialAccess.ok&&financialAccess.value?.code==="IDENTITY_VERIFICATION_REQUIRED")snapshot={complianceStatus:"NOT_STARTED",onboardingStatus:"NOT_STARTED"};
-    else snapshot=notStartedSnapshot();
+    // Business company record may not exist yet (400/404) — keep compliance incomplete.
+    // Never treat owner FULL_USER / financial-access eligible as company approval.
+    if(scope==="BUSINESS"&&financialAccess.ok&&financialAccess.value?.code==="IDENTITY_VERIFICATION_REQUIRED"){
+      snapshot={complianceStatus:"NOT_STARTED",onboardingStatus:"NOT_STARTED"};
+    }else snapshot=notStartedSnapshot();
   }
   else return unavailable(onboarding);
 
@@ -178,10 +187,10 @@ export async function loadAccountSetup(token:string,scope:AccountScope="PERSONAL
   const native=prefs[0]?.routeType==="NATIVE";
   if(native){
     if(nativeDestinations.ok&&rows(nativeDestinations.value)){
-      return {status:"ready",setup:accountSetupState(snapshot,prefs.length>0,nativeDestinations.value.length>0)};
+      return {status:"ready",setup:accountSetupState(snapshot,prefs.length>0,nativeDestinations.value.length>0,scope)};
     }
     if(accessBlocked(nativeDestinations)||incompleteSetup(nativeDestinations)){
-      return {status:"ready",setup:accountSetupState(snapshot,prefs.length>0,false)};
+      return {status:"ready",setup:accountSetupState(snapshot,prefs.length>0,false,scope)};
     }
     return unavailable(nativeDestinations);
   }
@@ -190,5 +199,5 @@ export async function loadAccountSetup(token:string,scope:AccountScope="PERSONAL
   if(bankAccounts.ok&&bankAccountRows(bankAccounts.value))hasPayout=bankAccountCount(bankAccounts.value)>0;
   else if(!(accessBlocked(bankAccounts)||incompleteSetup(bankAccounts)))return unavailable(bankAccounts);
 
-  return {status:"ready",setup:accountSetupState(snapshot,prefs.length>0,hasPayout)};
+  return {status:"ready",setup:accountSetupState(snapshot,prefs.length>0,hasPayout,scope)};
 }

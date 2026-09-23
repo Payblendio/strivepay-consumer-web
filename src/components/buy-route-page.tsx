@@ -147,13 +147,15 @@ export function BuyRoutePage({orders,historyAvailable=true,historyPartial=false,
     return <section className="dashboard-canvas dashboard-route-page buy-workspace">
       <div className="accounts-load-error" role="alert">
         <IconAlertTriangle size={22}/>
-        <div>
+        <div className="accounts-load-error-copy">
           <strong>Buy details could not be loaded</strong>
           <p>{loadError}</p>
         </div>
-        <button type="button" className="compliance-primary" onClick={()=>{setLoading(true);void load().then(()=>setLoadError("")).catch(error=>setLoadError(loadErrorMessage(error))).finally(()=>setLoading(false));}}>
-          Try again
-        </button>
+        <div className="sell-receive-idle-actions">
+          <button type="button" className="compliance-primary" onClick={()=>{setLoading(true);void load().then(()=>setLoadError("")).catch(error=>setLoadError(loadErrorMessage(error))).finally(()=>setLoading(false));}}>
+            Try again
+          </button>
+        </div>
       </div>
     </section>;
   }

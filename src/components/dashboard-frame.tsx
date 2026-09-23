@@ -2,15 +2,16 @@
 import {SupportUnreadBadge} from "./support-unread-badge";
 import {TwoFactorReminder} from "./two-factor-reminder";
 import {NotificationDrawer} from "./notification-drawer";
+import {BrandLogo} from "./brand-logo";
+import {ThemeToggle} from "./theme-toggle";
 
-import Image from "next/image";
 import Link from "next/link";
 import {usePathname,useRouter} from "next/navigation";
 import {useEffect,useRef,useState,useSyncExternalStore,type ReactNode} from "react";
 import {
   IconArrowsExchange,
-  IconChartArrowsVertical,
   IconChevronRight,
+  IconCoins,
   IconHistory,
   IconLayoutDashboard,
   IconListCheck,
@@ -38,7 +39,7 @@ type NavItem={
 
 const primaryItems:NavItem[]=[
   {id:"overview",label:"Overview",icon:IconLayoutDashboard,href:"/dashboard"},
-  {id:"buy",label:"Buy crypto",icon:IconChartArrowsVertical,href:"/dashboard/buy"},
+  {id:"buy",label:"Buy crypto",icon:IconCoins,href:"/dashboard/buy"},
   {id:"sell",label:"Sell crypto",icon:IconArrowsExchange,href:"/dashboard/sell"},
   {id:"activity",label:"Activity",icon:IconHistory,href:"/dashboard/activity"},
   {id:"accounts",label:"Accounts",icon:IconWallet,href:"/dashboard/accounts"},
@@ -72,7 +73,7 @@ export function DashboardFrame({customer,setup,accountScope="PERSONAL",canMutate
   const personLabel=`${customer.givenName} ${customer.familyName}`.trim();
   const identityPrimary=accountScope==="BUSINESS"&&businessContext?companyLabel:personLabel;
   const identitySecondary=accountScope==="BUSINESS"&&businessContext?`${personLabel} · Company`:"Personal account";
-  const setupHref=accountSetupHref(customer.accountType,accountScope);
+  const setupHref=accountSetupHref(customer.accountType,accountScope,setup);
 
   useEffect(()=>{
     const query=window.matchMedia(mobileQuery);
@@ -107,7 +108,7 @@ export function DashboardFrame({customer,setup,accountScope="PERSONAL",canMutate
       <aside ref={sidebarRef} className="dashboard-sidebar" id="dashboard-sidebar" aria-label="Dashboard navigation" role={drawerOpen?"dialog":undefined} aria-modal={drawerOpen?true:undefined} inert={mobile&&!drawerOpen}>
         <div className="dashboard-sidebar-brand">
           <Link href="/dashboard" aria-label="StrivePay dashboard">
-            <Image src="/branding/strivepay-logo-dark.svg" width={148} height={36} alt="StrivePay" priority/>
+            <BrandLogo width={148} height={36} priority/>
           </Link>
           <button type="button" aria-label="Close navigation" onClick={()=>setMenuOpen(false)}><IconX size={22}/></button>
         </div>
@@ -142,7 +143,7 @@ export function DashboardFrame({customer,setup,accountScope="PERSONAL",canMutate
           <Link href={setupHref} onClick={()=>setMenuOpen(false)}><IconShieldCheck size={18} stroke={1.75}/><span>Account setup</span></Link>
           <Link
             href="/dashboard/settings"
-            className={pathname.startsWith("/dashboard/settings")||pathname.startsWith("/dashboard/profile")?" active":undefined}
+  className={pathname.startsWith("/dashboard/settings")||pathname.startsWith("/dashboard/profile")?"active":undefined}
             aria-current={onAccount?"page":undefined}
             onClick={()=>setMenuOpen(false)}
           >
@@ -173,6 +174,7 @@ export function DashboardFrame({customer,setup,accountScope="PERSONAL",canMutate
           </div>
 
           <div className="dashboard-header-actions">
+            <ThemeToggle placement="header"/>
             <NotificationDrawer/>
             <Link className="dashboard-support-button" href="/dashboard/support" aria-label="Open support" title="Support"><IconMessageCircle size={21} aria-hidden="true"/></Link>
             <DashboardProfileMenu customer={customer} accountScope={accountScope}/>

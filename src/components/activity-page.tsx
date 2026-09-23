@@ -110,7 +110,7 @@ export function ActivityPage({
   const [exportFrom,setExportFrom]=useState("");
   const [exportTo,setExportTo]=useState("");
   const [exporting,setExporting]=useState(false);
-  const setupHref=accountSetupHref(customer.accountType,accountScope);
+  const setupHref=accountSetupHref(customer.accountType,accountScope,setup);
   const emptyAction=setup?.pending
     ?{href:setupHref,label:"Check verification"}
     :setup?.approved

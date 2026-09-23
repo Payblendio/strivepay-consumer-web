@@ -1,10 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {IconX} from "@tabler/icons-react";
 import {useState} from "react";
 import {ComplianceJourney} from "@/components/compliance-journey";
+import {BrandLogo} from "./brand-logo";
+import {ThemeToggle} from "./theme-toggle";
 
 type ComplianceWorkspaceProps={
   accountType:"PERSONAL"|"BUSINESS";
@@ -24,10 +25,11 @@ export function ComplianceWorkspace({accountType,givenName,familyName,email,coun
     <div className="compliance-workspace-grid" aria-hidden="true"/>
     <header className="compliance-topbar">
       <Link className="compliance-brand" href="/" aria-label="StrivePay home">
-        <Image src="/branding/strivepay-logo-dark.svg" alt="StrivePay" width={1937} height={621} priority/>
+        <BrandLogo width={1937} height={621} priority/>
       </Link>
-      <div className="compliance-topbar-label"><span>Account setup</span><b>Setup desk</b></div>
+      <div className="compliance-topbar-label"><span>Verification</span><b>Identity check</b></div>
       <div className="compliance-topbar-actions">
+        <ThemeToggle placement="header"/>
         <div className="compliance-account">
           <div><strong>{profile.givenName} {profile.familyName}</strong><small>{profile.email}</small></div>
         </div>

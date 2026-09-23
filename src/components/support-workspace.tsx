@@ -74,7 +74,7 @@ export function SupportWorkspace({scope="PERSONAL",canWrite=true,permissions=[],
   useEffect(()=>connectSharedSupport({scope,
     requestTicket:async signal=>{
       const response=await customerFetch("/api/support/socket-ticket",{method:"POST",signal,headers:{"X-StrivePay-Account-Scope":scope,}});
-      if(response.status===401||response.status===403)return null;
+      if(response.status===401||response.status===403||response.status===409||response.status===400)return null;
       if(!response.ok)throw new Error("Connection unavailable");
       return await response.json() as SupportConnectionTicket;
     },onChange:refresh,onState:state=>{setConnection(state);if(state!=="connected")setTyping("");},

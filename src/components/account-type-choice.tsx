@@ -4,6 +4,7 @@ import {useRouter} from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {IconAlertCircle,IconArrowRight,IconLoader2} from "@tabler/icons-react";
+import {writeBrowserAccountScope} from "@/lib/account-scope";
 
 type AccountType="PERSONAL"|"BUSINESS";
 
@@ -18,6 +19,13 @@ export function AccountTypeChoice(){
       const response=await fetch("/api/auth/account-type",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({accountType})});
       const data=await response.json().catch(()=>({}));
       if(!response.ok){setError(data.title??"We couldn’t save your choice. Try again.");setBusy(undefined);return}
+      writeBrowserAccountScope(accountType);
+      await fetch("/api/account-scope",{
+        method:"POST",
+        headers:{"Content-Type":"application/json",Accept:"application/json"},
+        credentials:"same-origin",
+        body:JSON.stringify({scope:accountType}),
+      }).catch(()=>null);
       router.replace(accountType==="BUSINESS"?"/onboarding/business":"/onboarding/personal");
       router.refresh();
     }catch{

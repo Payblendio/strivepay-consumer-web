@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   IconArrowRight,
   IconBuildingBank,
-  IconChartArrowsVertical,
+  IconCoins,
   IconHistory,
   IconShieldCheck,
   IconWallet,
@@ -175,7 +175,7 @@ export function HowItWorksPage(){
 
       <nav className="how-quick-links" aria-label="Related desks">
         <Link href="/dashboard/accounts"><IconWallet size={18}/><span>Accounts</span><small>Pay-in and payout</small></Link>
-        <Link href="/dashboard/buy"><IconChartArrowsVertical size={18}/><span>Buy crypto</span><small>Receiving wallet</small></Link>
+        <Link href="/dashboard/buy"><IconCoins size={18}/><span>Buy crypto</span><small>Receiving wallet</small></Link>
         <Link href="/dashboard/sell"><IconBuildingBank size={18}/><span>Sell crypto</span><small>Payout destinations</small></Link>
         <Link href="/dashboard/activity"><IconHistory size={18}/><span>Activity</span><small>Status and timeline</small></Link>
       </nav>

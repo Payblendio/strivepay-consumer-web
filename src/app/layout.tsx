@@ -19,6 +19,8 @@ import "./dashboard-shell.css";
 import "./onboarding-compliance.css";
 import { ToastProvider } from "@/components/ui/toast";
 import { ClientCryptoPolyfill } from "@/components/client-crypto-polyfill";
+import { ThemeProvider } from "@/components/theme-provider";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,13 +45,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${geistSans.variable} ${antonDisplay.variable} h-full antialiased`}
+      data-theme="dark"
+      suppressHydrationWarning
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: LAN_RANDOM_UUID_POLYFILL }} />
       </head>
       <body className="min-h-full flex flex-col">
         <ClientCryptoPolyfill />
-        <ToastProvider>{children}</ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

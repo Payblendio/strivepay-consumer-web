@@ -22,7 +22,7 @@ export function SumsubVerification({token,onSubmitted,onError}:{token:string;onS
           const value=await response.json() as {verificationToken?:string;title?:string};
           if(!response.ok||!value.verificationToken)throw new Error(value.title??"The identity session expired");
           return value.verificationToken;
-        }).withConf({lang:"en",theme:"light"})
+        }).withConf({lang:"en",theme:"dark"})
           .withOptions({addViewportTag:false,adaptIframeHeight:true})
           .on("idCheck.onReady",()=>setReady(true))
           .on("idCheck.onApplicantSubmitted",finish)

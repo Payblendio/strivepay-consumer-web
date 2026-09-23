@@ -34,44 +34,62 @@ function accountNumberLabel(account:Pick<DisplayAccount,"accountNumber"|"account
   return maskBankIdentifier(account.accountMask?.trim()||account.accountNumber);
 }
 
+function mergeSellAccounts(nativeDestinations:NativeDestination[],bankAccounts:unknown):DisplayAccount[]{
+  const nativeListed=nativeDestinations.map((item,index)=>({
+    id:item.id,
+    accountName:item.accountName,
+    currency:"NGN",
+    status:item.status,
+    mainRecipient:index===0,
+    accountMask:item.maskedAccountNumber,
+    accountNumber:item.accountNumber??null,
+    recipientType:"SELF" as const,
+    bankCode:item.bankCode,
+    native:true,
+  }));
+  const nativeIds=new Set(nativeListed.map(item=>item.id));
+  const bankListed=bankAccountItems<BankAccount>(bankAccounts)
+    .filter(item=>!nativeIds.has(item.id))
+    .map(item=>({...item,native:false}));
+  return sortPayoutAccounts([...nativeListed,...bankListed]);
+}
+
+/** List hub only needs destinations — skip coverage/preferences waterfall. */
+async function fetchSellDestinations():Promise<DisplayAccount[]>{
+  // Match mobile: always merge native destinations with Bakkt bank accounts.
+  // Cached list first (no refresh=true) so the hub paints without waiting on Bakkt.
+  const [nativeDestinations,bankAccounts]=await Promise.all([
+    withDeadline(moneyRouteApi<NativeDestination[]>("/native-destinations").catch(()=>[] as NativeDestination[]),12000,"Destination accounts timed out"),
+    withDeadline(
+      moneyRouteApi<unknown>("/bank-accounts?size=100").catch(()=>[]),
+      12000,
+      "Destination accounts timed out",
+    ),
+  ]);
+  return mergeSellAccounts(nativeDestinations,bankAccounts);
+}
+
 async function fetchSellWorkspace():Promise<SellWorkspace>{
-  const preferences=await withDeadline(moneyRouteApi<ReadyPreference[]>("/preferences"),12000,"Preferences timed out");
-  const saved=preferences[0]??null;
-  const isNative=saved?.routeType==="NATIVE";
+  // Parallelize everything — sequential preferences→coverage→accounts was stacking timeouts.
+  // Prefer cached coverage/banks; detail flows can still recover if stale.
+  const [preferences,coverageOutcome,nativeDestinations,bankAccounts]=await Promise.all([
+    withDeadline(moneyRouteApi<ReadyPreference[]>("/preferences"),12000,"Preferences timed out").catch(()=>[] as ReadyPreference[]),
+    withDeadline(moneyRouteApi<Coverage>("/coverage"),12000,"Coverage timed out")
+      .then(coverage=>({failed:false as const,coverage}))
+      .catch(()=>({failed:true as const,coverage:{transferableAssets:[] as Asset[]}})),
+    withDeadline(moneyRouteApi<NativeDestination[]>("/native-destinations").catch(()=>[] as NativeDestination[]),12000,"Destination accounts timed out"),
+    withDeadline(
+      moneyRouteApi<unknown>("/bank-accounts?size=100").catch(()=>[]),
+      12000,
+      "Destination accounts timed out",
+    ),
+  ]);
 
-  let coverageFailed=false;
-  const coverage=await withDeadline(moneyRouteApi<Coverage>("/coverage?refresh=true"),12000,"Coverage timed out").catch(()=>{
-    coverageFailed=true;
-    return {transferableAssets:[] as Asset[]};
-  });
-
-  if(isNative){
-    const nativeDestinations=await withDeadline(moneyRouteApi<NativeDestination[]>("/native-destinations"),12000,"Destination accounts timed out");
-    const listed=nativeDestinations.map((item,index)=>({
-      id:item.id,
-      accountName:item.accountName,
-      currency:"NGN",
-      status:item.status,
-      mainRecipient:index===0,
-      accountMask:item.maskedAccountNumber,
-      accountNumber:item.accountNumber??null,
-      recipientType:"SELF" as const,
-      bankCode:item.bankCode,
-      native:true,
-    }));
-    return {accounts:sortPayoutAccounts(listed),assets:sellDepositAssets(coverage.transferableAssets??[]),saved,coverageFailed};
-  }
-
-  const bankAccounts=await withDeadline(
-    moneyRouteApi<unknown>("/bank-accounts?refresh=true&size=100").catch(()=>moneyRouteApi<unknown>("/bank-accounts?size=100")),
-    12000,
-    "Destination accounts timed out",
-  );
   return {
-    accounts:sortPayoutAccounts(bankAccountItems<BankAccount>(bankAccounts).map(item=>({...item,native:false}))),
-    assets:sellDepositAssets(coverage.transferableAssets??[]),
-    saved,
-    coverageFailed,
+    accounts:mergeSellAccounts(nativeDestinations,bankAccounts),
+    assets:sellDepositAssets(coverageOutcome.coverage.transferableAssets??[]),
+    saved:preferences[0]??null,
+    coverageFailed:coverageOutcome.failed,
   };
 }
 
@@ -99,8 +117,8 @@ export function SellRoutePage(){
     let active=true;
     setLoading(true);
     setAccounts([]);
-    void fetchSellWorkspace()
-      .then(result=>{if(active){setAccounts(result.accounts);setLoadError("");}})
+    void fetchSellDestinations()
+      .then(result=>{if(active){setAccounts(result);setLoadError("");}})
       .catch(error=>{if(active){setLoadError(loadErrorMessage(error,"Destination accounts could not be loaded"));setAccounts([]);}})
       .finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};
@@ -119,11 +137,13 @@ export function SellRoutePage(){
     {loading?<div className="compliance-loading"><IconLoader2 className="spin"/>Loading destination accounts...</div>
       :loadError?<div className="accounts-load-error" role="alert">
         <IconAlertTriangle size={22}/>
-        <div>
+        <div className="accounts-load-error-copy">
           <strong>Destinations could not be loaded</strong>
           <p>{loadError}</p>
         </div>
-        <button type="button" className="compliance-primary" onClick={()=>{setLoadError("");setLoadAttempt(value=>value+1);}}>Try again</button>
+        <div className="sell-receive-idle-actions">
+          <button type="button" className="compliance-primary" onClick={()=>{setLoadError("");setLoadAttempt(value=>value+1);}}>Try again</button>
+        </div>
       </div>
       :<>
       <header className="buy-soft-head sell-hub-head">
@@ -164,7 +184,7 @@ export function SellRoutePage(){
               {thirdParty?<span className="sell-destination-warning">Proceeds settle to someone else</span>:null}
               {!ready?<span className="sell-destination-warning">Wait until Ready before sending crypto</span>:null}
             </div>
-            <span className="sell-destination-go">Create send instructions <IconArrowRight size={15}/></span>
+            <span className="sell-destination-go">Get deposit address <IconArrowRight size={15}/></span>
           </Link>;
         })}
       </div>}

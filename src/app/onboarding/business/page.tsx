@@ -5,6 +5,7 @@ import {loginHref} from "@/lib/auth-access";
 import {backend} from "@/lib/backend";
 
 type Customer={email:string;givenName:string;familyName:string;phoneE164?:string|null;country:string;emailVerified:boolean;accountType?:string;membershipRole?:string|null};
+type OnboardingStatus={complianceStatus?:string|null};
 
 export default async function BusinessOnboarding(){
   const token=(await cookies()).get("sp_access")?.value;
@@ -15,5 +16,8 @@ export default async function BusinessOnboarding(){
   if(!customer.emailVerified)redirect(`/verify-email?email=${encodeURIComponent(customer.email)}`);
   if(!customer.accountType)redirect("/onboarding/account-type");
   if(customer.accountType==="PERSONAL")redirect("/onboarding/personal");
-  return <ComplianceWorkspace accountType="BUSINESS" membershipRole={customer.membershipRole} givenName={customer.givenName} familyName={customer.familyName} email={customer.email} country={customer.country} phoneE164={customer.phoneE164}/>;
+  const statusResponse=await backend("/v1/onboarding",{headers:{Authorization:`Bearer ${token}`}});
+  const status=statusResponse.ok?await statusResponse.json() as OnboardingStatus:null;
+  const ownerVerified=status?.complianceStatus==="FULL_USER";
+  return <ComplianceWorkspace accountType="BUSINESS" membershipRole={customer.membershipRole} initialComplianceApproved={ownerVerified} givenName={customer.givenName} familyName={customer.familyName} email={customer.email} country={customer.country} phoneE164={customer.phoneE164}/>;
 }

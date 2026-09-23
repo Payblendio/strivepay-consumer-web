@@ -38,12 +38,13 @@ export function SettingsScreen(){
       <div className="account-settings-list" role="list">
         <SettingsRow href="/dashboard/profile" icon={accountIcons.profile} title="Profile" detail={customer.organizationLegalName||customer.email}/>
         {business?<SettingsRow href="/dashboard/settings/team" icon={accountIcons.team} title="Team" detail="Invite members and manage roles"/>:null}
+        {business?<SettingsRow href="/dashboard/settings/sso" icon={accountIcons.sso} title="Company SSO" detail="SAML single sign-on for your team"/>:null}
         <SettingsRow href="/dashboard/settings/security" icon={accountIcons.security} title="Security" detail="Password, authenticator, and devices"/>
         {hasBusinessMembershipHint(customer)?<>
-          <SettingsRow href="/onboarding/personal" icon={accountIcons.setup} title="Personal setup" detail="Your identity check and personal money routes" onNavigate={()=>openScopedSetup("PERSONAL","/onboarding/personal")}/>
-          <SettingsRow href="/onboarding/business" icon={accountIcons.setup} title="Company money routes" detail="View or update company pay-in, payout, and crypto routes" onNavigate={()=>openScopedSetup("BUSINESS","/onboarding/business")}/>
+          <SettingsRow href="/onboarding/personal" icon={accountIcons.setup} title="Personal setup" detail="Your identity check" onNavigate={()=>openScopedSetup("PERSONAL","/onboarding/personal")}/>
+          <SettingsRow href="/dashboard/accounts" icon={accountIcons.setup} title="Company money routes" detail="View or update company pay-in, payout, and crypto routes" onNavigate={()=>openScopedSetup("BUSINESS","/dashboard/accounts")}/>
         </>:
-          <SettingsRow href={accountScope==="BUSINESS"?"/onboarding/business":"/onboarding/personal"} icon={accountIcons.setup} title="Account setup" detail="Compliance, pay-in, and payout"/>
+          <SettingsRow href={accountScope==="BUSINESS"?"/onboarding/business":"/onboarding/personal"} icon={accountIcons.setup} title="Account setup" detail="Compliance and verification"/>
         }
       </div>
     </section>

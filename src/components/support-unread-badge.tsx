@@ -12,6 +12,7 @@ export function SupportUnreadBadge({scope="PERSONAL"}:{scope?:string}){
     const refresh=()=>{
       pending?.abort();const controller=new AbortController();pending=controller;
       void customerFetch("/api/support/unread",{headers,signal:controller.signal,cache:"no-store"}).then(async response=>{
+        if(response.status===401||response.status===403||response.status===409||response.status===400)throw new Error("Unread unavailable");
         if(!response.ok)throw new Error("Unread unavailable");
         const data=await response.json();
         if(!Number.isSafeInteger(data.unreadMessages)||data.unreadMessages<0)throw new Error("Invalid count");
@@ -21,7 +22,7 @@ export function SupportUnreadBadge({scope="PERSONAL"}:{scope?:string}){
     const dispose=connectSharedSupport({scope,onChange:refresh,onState:state=>{if(state!=="connected"){pending?.abort();setCount(null);}},
       requestTicket:async signal=>{
         const response=await customerFetch("/api/support/socket-ticket",{method:"POST",headers,signal});
-        if(response.status===401||response.status===403)return null;
+        if(response.status===401||response.status===403||response.status===409||response.status===400)return null;
         if(!response.ok)throw new Error("Connection unavailable");
         return response.json();
       },

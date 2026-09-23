@@ -1,13 +1,143 @@
-.ui-dialog.two-factor-reminder{width:min(460px,calc(100vw - 32px));border-radius:0;box-shadow:none;}
-.two-factor-reminder .dialog-panel{box-shadow:none;border-radius:0;}
-.two-factor-reminder .dialog-panel>header .micro-label{display:none;}
-.two-factor-reminder .dialog-panel>header h2{font-family:inherit;font-size:25px;line-height:1.2;text-transform:none;letter-spacing:-.5px;}
-.two-factor-reminder .dialog-body{display:flex;flex-direction:column;gap:20px;}
-.two-factor-reminder-icon{display:grid;place-items:center;width:64px;height:64px;color:#008c96;background:#e5f6f6;}
-.two-factor-reminder .dialog-body>p{margin:0;color:#526c76;font-size:16px;line-height:1.6;}
-.two-factor-reminder-detail{display:grid;gap:6px;border-left:3px solid #0da4b5;padding:4px 0 4px 14px;}
-.two-factor-reminder-detail strong{font-size:14px;color:#0b1938;}
-.two-factor-reminder-detail span{font-size:14px;line-height:1.5;color:#526c76;}
-.two-factor-reminder-primary{display:flex;align-items:center;justify-content:center;gap:16px;min-height:50px;background:#0da4b5;color:#071c29;text-decoration:none;font-weight:700;}
-.two-factor-reminder-later{min-height:44px;background:transparent;border:0;color:#526c76;font:inherit;font-size:14px;cursor:pointer;margin-top:-12px;}
-.two-factor-reminder-primary:focus-visible,.two-factor-reminder-later:focus-visible{outline:2px solid #0b1938;outline-offset:3px;}
+.ui-dialog.two-factor-reminder {
+  width: min(460px, calc(100vw - 32px));
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.two-factor-reminder .dialog-panel {
+  box-shadow: none;
+  border-radius: 0;
+  border: 1px solid var(--dash-line, #2A2D38);
+  background: var(--dash-elevated, #1A1C24);
+  color: var(--dash-ink, #F2F3F5);
+}
+
+.two-factor-reminder .dialog-panel > header {
+  border-bottom: 1px solid var(--dash-line, #2A2D38);
+}
+
+.two-factor-reminder .dialog-panel > header .micro-label {
+  display: none;
+}
+
+.two-factor-reminder .dialog-panel > header h2 {
+  margin: 0;
+  font-family: inherit;
+  font-size: 25px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -.5px;
+  text-transform: none;
+  color: var(--dash-ink, #F2F3F5);
+}
+
+.two-factor-reminder .dialog-panel > header .icon-button {
+  border-color: var(--dash-line, #2A2D38);
+  background: var(--dash-paper, #12141A);
+  color: var(--dash-muted, #C4C7CE);
+}
+
+.two-factor-reminder .dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.two-factor-reminder-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  color: var(--dash-teal, #08BDD2);
+  background: color-mix(in srgb, var(--dash-teal, #08BDD2) 16%, var(--dash-elevated, #1A1C24));
+}
+
+.two-factor-reminder .dialog-body > p {
+  margin: 0;
+  color: var(--dash-muted, #9A9EA8);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.two-factor-reminder-detail {
+  display: grid;
+  gap: 6px;
+  border-left: 3px solid var(--dash-teal, #0da4b5);
+  padding: 4px 0 4px 14px;
+}
+
+.two-factor-reminder-detail strong {
+  font-size: 14px;
+  color: var(--dash-ink, #F2F3F5);
+}
+
+.two-factor-reminder-detail span {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--dash-muted, #9A9EA8);
+}
+
+.two-factor-reminder-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 50px;
+  background: var(--dash-teal, #0da4b5);
+  color: #071c29;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.two-factor-reminder-later {
+  min-height: 44px;
+  background: transparent;
+  border: 0;
+  color: var(--dash-muted, #9A9EA8);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: -12px;
+}
+
+.two-factor-reminder-primary:focus-visible,
+.two-factor-reminder-later:focus-visible {
+  outline: 2px solid var(--dash-teal, #0da4b5);
+  outline-offset: 3px;
+}
+
+:root[data-theme="light"] .two-factor-reminder .dialog-panel {
+  border-color: #d5e0e1;
+  background: #fdfdff;
+  color: #0b1b35;
+}
+
+:root[data-theme="light"] .two-factor-reminder .dialog-panel > header {
+  border-bottom-color: #e7eaf0;
+}
+
+:root[data-theme="light"] .two-factor-reminder .dialog-panel > header h2 {
+  color: #0b1b35;
+}
+
+:root[data-theme="light"] .two-factor-reminder .dialog-panel > header .icon-button {
+  border-color: #d5e0e1;
+  background: #fff;
+  color: #526c76;
+}
+
+:root[data-theme="light"] .two-factor-reminder-icon {
+  color: #008c96;
+  background: #e5f6f6;
+}
+
+:root[data-theme="light"] .two-factor-reminder .dialog-body > p,
+:root[data-theme="light"] .two-factor-reminder-detail span,
+:root[data-theme="light"] .two-factor-reminder-later {
+  color: #526c76;
+}
+
+:root[data-theme="light"] .two-factor-reminder-detail strong {
+  color: #0b1938;
+}

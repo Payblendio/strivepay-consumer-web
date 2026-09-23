@@ -19,6 +19,15 @@ describe("request origin validation", () => {
     expect(hasValidRequestOrigin("https://app.strivepay.co", headers, "http://consumer-web:18081")).toBe(true);
   });
 
+  it("accepts https browser origins when the proxy reports http for the same host", () => {
+    const headers = new Headers({
+      host: "staging.strivepay.io",
+      "x-forwarded-proto": "http",
+    });
+
+    expect(hasValidRequestOrigin("https://staging.strivepay.io", headers, "http://consumer-web:18081")).toBe(true);
+  });
+
   it("rejects cross-site and malformed origins", () => {
     const headers = new Headers({ host: "localhost:18081" });
 

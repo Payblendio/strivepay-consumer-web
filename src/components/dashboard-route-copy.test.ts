@@ -55,6 +55,7 @@ describe("dashboard route copy",()=>{
     expect(dashboardBreadcrumb("/dashboard/buy/add")).toEqual([{label:"Overview",href:"/dashboard"},{label:"Accounts",href:"/dashboard/accounts"},{label:"Request pay-in account"}]);
     expect(dashboardBreadcrumb("/dashboard/profile")).toEqual([{label:"Overview",href:"/dashboard"},{label:"Settings",href:"/dashboard/settings"},{label:"Profile"}]);
     expect(dashboardBreadcrumb("/dashboard/settings")).toEqual([{label:"Overview",href:"/dashboard"},{label:"Settings"}]);
+    expect(dashboardBreadcrumb("/dashboard/settings/sso")).toEqual([{label:"Overview",href:"/dashboard"},{label:"Settings",href:"/dashboard/settings"},{label:"SSO settings"}]);
     expect(dashboardBreadcrumb("/dashboard/settings/security")).toEqual([{label:"Overview",href:"/dashboard"},{label:"Settings",href:"/dashboard/settings"},{label:"Security"}]);
     expect(dashboardBreadcrumb("/dashboard/settings/security/password")).toEqual([{label:"Overview",href:"/dashboard"},{label:"Settings",href:"/dashboard/settings"},{label:"Security",href:"/dashboard/settings/security"},{label:"Change password"}]);
     expect(dashboardBreadcrumb("/dashboard/settings/security/authenticator")).toEqual([{label:"Overview",href:"/dashboard"},{label:"Settings",href:"/dashboard/settings"},{label:"Security",href:"/dashboard/settings/security"},{label:"Authenticator"}]);
@@ -93,10 +94,15 @@ describe("dashboard route copy",()=>{
   it("flags unfinished compliance and money-route setup",()=>{
     expect(accountSetupHref("BUSINESS")).toBe("/onboarding/business");
     expect(accountSetupHref("PERSONAL")).toBe("/onboarding/personal");
+    expect(accountSetupHref("PERSONAL","PERSONAL",{approved:true})).toBe("/dashboard/accounts");
+    expect(accountSetupHref("BUSINESS","BUSINESS",{approved:true})).toBe("/dashboard/accounts");
+    expect(accountSetupHref("BUSINESS","BUSINESS",{approved:false})).toBe("/onboarding/business");
     expect(accountSetupState(null,false,false)).toEqual({approved:false,pending:false,failed:false,routesReady:false,complianceStatus:""});
     expect(accountSetupState({complianceStatus:"KYC_PENDING"},true,true)).toMatchObject({approved:false,pending:true,routesReady:false});
     expect(accountSetupState({complianceStatus:"FULL_USER"},true,false)).toMatchObject({approved:true,routesReady:false});
     expect(accountSetupState({complianceStatus:"FULL_USER"},true,true)).toMatchObject({approved:true,routesReady:true});
+    expect(accountSetupState({complianceStatus:"FULL_USER"},true,true,"BUSINESS")).toMatchObject({approved:false,routesReady:false});
+    expect(accountSetupState({complianceStatus:"ACTIVE"},true,true,"BUSINESS")).toMatchObject({approved:true,routesReady:true});
     expect(accountSetupState({complianceStatus:"REJECTED"},false,false).failed).toBe(true);
   });
 

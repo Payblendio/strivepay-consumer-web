@@ -59,12 +59,14 @@ export function PayInAccountEditor({customer}:{customer:DashboardCustomer}){
     if(native)owned.add("NGN");
     if(cancelled)return;
     const names=new Map((coverage?.fiatCurrencies??[]).map(item=>[item.code,item.name]));
-    const available=(coverage?.fundingCurrencies??[])
-      .map(item=>item.code)
+    const fundingCodes=new Set((coverage?.fundingCurrencies??[]).map(item=>item.code.toUpperCase()));
+    // Match mobile payout catalogs: always surface NGN for eligible residence even if Bakkt coverage omits it.
+    if(residenceAllowsCurrency(customer.country,"NGN"))fundingCodes.add("NGN");
+    const available=[...fundingCodes]
       .filter(code=>residenceAllowsCurrency(customer.country,code)&&!owned.has(code.toUpperCase()))
-      .map(code=>({value:code,label:names.get(code)??FIAT_NAME[code]??code,detail:code==="USD"?"Reusable US deposit account":"No pay-in account yet",kind:"fiat" as const}));
+      .map(code=>({value:code,label:names.get(code)??FIAT_NAME[code]??code,detail:code==="USD"?"Reusable US deposit account":code==="NGN"?"Local NGN pay-in account":"No pay-in account yet",kind:"fiat" as const}));
     setOptions(available);
-    setAllCurrenciesOwned(Boolean(coverage.fundingCurrencies?.length)&&available.length===0);
+    setAllCurrenciesOwned(fundingCodes.size>0&&available.length===0);
     const home=COUNTRY_CURRENCY[customer.country.toUpperCase()];
     setCurrency(available.find(item=>item.value===(saved?.fiatCurrency||home))?.value??available[0]?.value??"");
     setLoadError("");

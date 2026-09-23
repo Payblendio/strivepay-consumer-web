@@ -4,6 +4,7 @@ import {useRouter,useSearchParams} from "next/navigation";
 import {useCallback,useEffect,useState} from "react";
 import {IconArrowRight,IconLoader2,IconRefresh} from "@tabler/icons-react";
 import {clearVerificationChallenge,readVerificationChallenge,storeVerificationChallenge} from "@/lib/verification-challenge";
+import {AccessField} from "./access-field";
 
 type VerificationState="waiting"|"verifying"|"verified"|"error";
 type VerificationError="invalid"|"network"|"send"|"missing"|null;
@@ -100,10 +101,11 @@ export function EmailVerificationForm({verificationEmail=""}:{verificationEmail?
     </div>
     {error?<div className="access-verification-notice error" role="alert">{error}</div>:null}
     {(state==="waiting"||state==="error"&&(errorKind==="invalid"||errorKind==="missing"))?(
-      <form className="access-code-form" onSubmit={(event)=>{event.preventDefault();void verifyWith(code);}}>
-        <label className="field">
-          <span>Verification code</span>
+      <form className="access-form access-code-form" onSubmit={(event)=>{event.preventDefault();void verifyWith(code);}}>
+        <AccessField id="verification-code" label="Verification code">
           <input
+            id="verification-code"
+            className="access-code-input"
             autoComplete="one-time-code"
             inputMode="numeric"
             maxLength={6}
@@ -113,7 +115,7 @@ export function EmailVerificationForm({verificationEmail=""}:{verificationEmail?
             placeholder="••••••"
             value={code}
           />
-        </label>
+        </AccessField>
         <button className="access-primary-button" disabled={busy||code.length!==6} type="submit">
           {busy?<><IconLoader2 className="access-spinner" size={19}/>Checking…</>:<>Verify email<IconArrowRight size={19}/></>}
         </button>

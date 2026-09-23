@@ -128,7 +128,7 @@ describe.each(["PERSONAL","BUSINESS"] as const)("%s agreement loading safety",ki
 });
 
 describe("business member identity copy",()=>{
-  it("skips owner-first framing when company compliance is already done",async()=>{
+  it("skips company record and opens member identity check",async()=>{
     accountType="BUSINESS";
     customerFetch.mockImplementation((input:string)=>{
       const path=input.replace("/api/onboarding","");
@@ -141,11 +141,10 @@ describe("business member identity copy",()=>{
       throw new Error(`Unexpected mocked request: ${path}`);
     });
     render(<ComplianceJourney {...customer} accountType="BUSINESS" membershipRole="ADMINISTRATOR"/>);
-    expect(await screen.findByText("BUSINESS / YOUR IDENTITY")).toBeInTheDocument();
-    expect(screen.getByText(/Company compliance is already complete/i)).toBeInTheDocument();
-    expect(screen.getByText("Your identity")).toBeInTheDocument();
+    expect(await screen.findByText("YOUR CHECK")).toBeInTheDocument();
+    expect(screen.getByRole("heading",{name:"Your profile"})).toBeInTheDocument();
+    expect(screen.getByText(/Step 1 of 6/i)).toBeInTheDocument();
     expect(screen.queryByText(/OWNER FIRST/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Legal company name")).not.toBeInTheDocument();
-    expect(await screen.findByText("YOUR CHECK")).toBeInTheDocument();
   });
 });

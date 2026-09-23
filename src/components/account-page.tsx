@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {IconChevronRight,IconLock,IconShieldCheck,IconUser,IconUsers} from "@tabler/icons-react";
+import {IconChevronRight,IconKey,IconLock,IconShieldCheck,IconUser,IconUsers} from "@tabler/icons-react";
 import type {ReactNode} from "react";
 
 export function AccountPage({title,copy,children}:{title:string;copy:string;children:ReactNode}){
@@ -36,4 +36,5 @@ export const accountIcons={
   security:<IconLock size={18}/>,
   setup:<IconShieldCheck size={18}/>,
   team:<IconUsers size={18}/>,
+  sso:<IconKey size={18}/>,
 };
