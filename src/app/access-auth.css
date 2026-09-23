@@ -1267,29 +1267,8 @@ button.strivepay-swal-close {
 
 @media (max-width: 1050px) {
   .access-shell {
-  --access-display: var(--font-anton-display), Impact, "Arial Narrow Bold", sans-serif;
-  --access-ink: #F2F3F5;
-  --access-body: #C4C7CE;
-  --access-muted: #9A9EA8;
-  --access-line: #2A2D38;
-  --access-soft: #1A1C24;
-  --access-elevated: #1A1C24;
-  --access-paper: #12141A;
-  --access-accent: #08BDD2;
-  --access-accent-dark: #28CADC;
-  --access-accent-soft: rgba(8, 189, 210, .16);
-  --access-control-height: 50px;
-  --access-danger: #F07184;
-  --access-danger-soft: #32181E;
-  --access-success: #3DCCA0;
-  color-scheme: dark;
-  min-height: 100svh;
-  display: grid;
-  grid-template-columns: minmax(370px, 44%) minmax(0, 56%);
-  background: var(--access-paper);
-  color: var(--access-ink);
-  font-family: var(--font-geist-sans), Arial, sans-serif;
-}
+    grid-template-columns: minmax(320px, 42%) minmax(0, 58%);
+  }
   .access-story-content { padding: 28px; }
   .access-logo img { width: 148px; }
   .access-story-body {
@@ -1312,107 +1291,48 @@ button.strivepay-swal-close {
 }
 
 @media (max-width: 760px) {
+  /* Single column: hiding .access-story must not leave an empty 44% grid track. */
   .access-shell {
-  --access-display: var(--font-anton-display), Impact, "Arial Narrow Bold", sans-serif;
-  --access-ink: #F2F3F5;
-  --access-body: #C4C7CE;
-  --access-muted: #9A9EA8;
-  --access-line: #2A2D38;
-  --access-soft: #1A1C24;
-  --access-elevated: #1A1C24;
-  --access-paper: #12141A;
-  --access-accent: #08BDD2;
-  --access-accent-dark: #28CADC;
-  --access-accent-soft: rgba(8, 189, 210, .16);
-  --access-control-height: 50px;
-  --access-danger: #F07184;
-  --access-danger-soft: #32181E;
-  --access-success: #3DCCA0;
-  color-scheme: dark;
-  min-height: 100svh;
-  display: grid;
-  grid-template-columns: minmax(370px, 44%) minmax(0, 56%);
-  background: var(--access-paper);
-  color: var(--access-ink);
-  font-family: var(--font-geist-sans), Arial, sans-serif;
-}
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: clip;
+  }
 
   .access-story {
-    position: relative;
-    height: 250px;
-    min-height: 250px;
-  }
-
-  .access-story-shape {
-    top: 0;
-    right: -40%;
-    bottom: -40%;
-    left: 58%;
-    border-radius: 0;
-  }
-
-  .access-story-body {
-    --access-teal-edge: 58%;
-    width: 100%;
-    display: block;
-    padding: 0;
-  }
-
-  .access-story-eyebrow-desktop,
-  .access-story-title-desktop,
-  .access-story-copy-desktop { display: none; }
-
-  .access-story-title-mobile {
-    display: block;
-    max-width: 210px;
-    margin: 10px 0 0;
-    font-size: 34px;
-    line-height: .92;
-  }
-
-  .access-card-heading {
     display: none;
-  }
-
-  .access-collage {
-    position: absolute;
-    inset: 0;
-    min-height: 0;
-  }
-
-  .access-product-preview { display: none; }
-
-  .access-story-person {
-    right: -12px;
-    bottom: -48px;
-    left: auto;
-    width: 176px;
-    transform: scaleX(-1);
-    filter: drop-shadow(0 10px 14px rgba(11, 23, 51, .08));
   }
 
   .access-main {
-    flex: 1;
-    padding: 0 24px 24px;
-  }
-
-  .access-mobile-brand {
-    display: none;
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 100svh;
+    box-sizing: border-box;
+    padding: 28px clamp(20px, 5vw, 28px) 24px;
   }
 
   .access-main-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto 8px;
+    padding: 0;
+  }
+
+  .access-mobile-brand {
+    display: block;
+    width: auto;
     max-width: none;
     margin: 0;
-    padding: 16px 0 0;
-    justify-content: flex-end;
-  }
-
-  .access-theme-toggle-main {
-    display: grid;
-  }
-
-  .access-theme-toggle-story {
-    display: none;
   }
 
   .access-mobile-brand a,
@@ -1423,9 +1343,17 @@ button.strivepay-swal-close {
     height: auto;
   }
 
+  .access-theme-toggle-main { display: grid; }
+  .access-theme-toggle-story { display: none; }
+
+  .access-card-heading { display: block; }
+
   .access-main-inner {
+    width: 100%;
     max-width: 520px;
-    padding: 38px 0 42px;
+    margin-inline: auto;
+    padding: 44px 0 36px;
+    box-sizing: border-box;
   }
 
   .access-main-register .access-main-inner {
@@ -1433,28 +1361,20 @@ button.strivepay-swal-close {
     padding: 34px 0 44px;
   }
 
-  .access-safety-note { max-width: 440px; }
+  .access-card-heading h2 { font-size: 40px; }
+  .access-safety-note {
+    width: 100%;
+    max-width: 520px;
+    margin-inline: auto;
+  }
 }
 
 @media (max-width: 430px) {
-  .access-story {
-    height: 232px;
-    min-height: 232px;
-  }
-
-  .access-story-title-mobile {
-    max-width: 190px;
-    font-size: 32px;
-  }
-
-  .access-story-content { padding-inline: 20px; }
-  .access-story-person { right: -18px; bottom: -48px; width: 166px; }
-
-  .access-main { padding-inline: 20px; }
+  .access-main { padding-inline: 16px; }
   .access-main-inner { padding-top: 32px; }
   .access-card-heading { margin-bottom: 26px; }
 
-  .access-card-heading h2 { font-size: 42px; }
+  .access-card-heading h2 { font-size: 36px; }
   .access-result h2 { font-size: 34px; }
 
   .access-form { gap: 20px; }
@@ -1522,24 +1442,6 @@ button.strivepay-swal-close {
 .access-field-label-row a { color: var(--access-accent); }
 .access-card-footer a { color: var(--access-accent); }
 .access-safety-note { color: var(--access-muted); }
-@media (max-width: 760px) {
-  .access-story { display: none; }
-  .access-main { min-height: 100svh; padding-top: 28px; }
-  .access-main-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    width: 100%;
-    max-width: 520px;
-    margin: 0 auto 8px;
-  }
-  .access-mobile-brand { display: block; width: auto; max-width: none; margin: 0; }
-  .access-theme-toggle-main { display: grid; }
-  .access-card-heading { display: block; }
-  .access-main-inner { padding: 44px 0 36px; }
-  .access-card-heading h2 { font-size: 40px; }
-}
 
 /* Light theme — form column; story panel stays dark. */
 :root[data-theme="light"] .access-shell {
