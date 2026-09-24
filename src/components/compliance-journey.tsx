@@ -17,6 +17,7 @@ import {useToast} from "@/components/ui/toast";
 import {customerFetch} from "@/lib/customer-session";
 import {apiErrorMessage} from "@/lib/api-error";
 import {addressCharacterError} from "@/lib/address-characters";
+import {useJurisdictions} from "@/lib/jurisdictions";
 
 type Customer={givenName:string;familyName:string;email:string;country:string;phoneE164?:string|null};
 type Status={partyId?:string;onboardingStatus:string;complianceStatus:string;accountStatus?:string|null;actionRequired?:string|null};
@@ -313,6 +314,8 @@ function CompanyJourney({customer,onApproved}:{customer:Customer;onApproved?:()=
   const setError=useJourneyError();
   const [status,setStatus]=useState<Status|null>(null),[verificationUrl,setVerificationUrl]=useState(""),[postcodeRule,setPostcodeRule]=useState<PostcodeRule|null>(null);
   const legal=useLegalDocuments(),documents=legal.documents;
+  const {jurisdictions}=useJurisdictions();
+  const corporateCountries=(jurisdictions??[]).filter(item=>item.corporateSupported).map(item=>({code:item.code,name:item.name}));
   const [draft,setDraft]=useState<CompanyDraft>({legalName:"",registrationNumber:"",incorporationCountry:customer.country.toUpperCase(),businessType:"",contactName:`${customer.givenName} ${customer.familyName}`,contactEmail:customer.email,contactPhone:customer.phoneE164??"",addressLine1:"",addressLine2:"",postCode:"",city:""});
   const approved=status?.complianceStatus==="ACTIVE";
   const update=(key:keyof CompanyDraft,value:string)=>setDraft(current=>({...current,[key]:value}));
@@ -363,7 +366,7 @@ function CompanyJourney({customer,onApproved}:{customer:Customer;onApproved?:()=
   </JourneyBody>;
   return <JourneyBody eyebrow="COMPANY CHECK" title={active<4?companySteps[active].title:"Company review"} statusLabel={active===4?"In review":"In progress"} steps={companySteps} active={active}>
     {active===0?<form className="compliance-form" onSubmit={saveRecord} noValidate><p className="compliance-form-copy">Use the company name and number exactly as registered.</p><div className="compliance-form-grid">
-      <Field label="Legal company name"><input value={draft.legalName} onChange={e=>update("legalName",e.target.value)} required/></Field><Field label="Registration number"><input value={draft.registrationNumber} onChange={e=>update("registrationNumber",e.target.value)} required/></Field><CountrySelect value={draft.incorporationCountry} onChange={value=>update("incorporationCountry",value)} label="Incorporation country" className="compliance-country-field" modalClassName="compliance-selector-dialog"/>
+      <Field label="Legal company name"><input value={draft.legalName} onChange={e=>update("legalName",e.target.value)} required/></Field><Field label="Registration number"><input value={draft.registrationNumber} onChange={e=>update("registrationNumber",e.target.value)} required/></Field><CountrySelect value={draft.incorporationCountry} onChange={value=>update("incorporationCountry",value)} options={corporateCountries} label="Incorporation country" className="compliance-country-field" modalClassName="compliance-selector-dialog"/>
     </div><div className="compliance-form-actions"><button className="compliance-primary" disabled={busy} type="submit">{busy?<IconLoader2 className="spin" size={17}/>:null}Save company <IconArrowRight size={17}/></button></div></form>:null}
     {active===1?<form className="compliance-form" onSubmit={detailsNext} noValidate><p className="compliance-form-copy">Company contact and registered address. Settlement wallets are set with company money routes.</p><div className="compliance-form-grid">
       <Field label="Business type"><select value={draft.businessType} onChange={e=>update("businessType",e.target.value)} required><option value="">Choose a type</option><option value="LIMITED_LIABILITY">Limited liability</option><option value="SOLE_TRADER">Sole trader</option><option value="PARTNERSHIP">Partnership</option><option value="PUBLIC_LIMITED_COMPANY">Public limited company</option><option value="JOINT_STOCK_COMPANY">Joint stock company</option><option value="CHARITY">Charity</option></select></Field>

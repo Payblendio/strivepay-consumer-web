@@ -726,6 +726,39 @@
   font-weight: 600;
 }
 
+.access-step-back {
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.access-country-field > label {
+  color: var(--access-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.access-country-field .country-trigger {
+  height: var(--access-control-height);
+  min-height: var(--access-control-height);
+  padding: 0 14px;
+  border: 1px solid var(--access-line);
+  border-radius: 0;
+  background: var(--access-elevated);
+  box-shadow: none;
+  color: var(--access-ink);
+}
+
+.access-country-field .country-trigger:hover,
+.access-country-field .country-trigger:focus-visible { border-color: var(--access-accent); outline: none; }
+.access-country-field .country-trigger strong { font-size: 14px; }
+.access-country-field .country-trigger small { font-size: 10px; }
+.access-country-field.invalid .country-trigger { border-color: #cf7785; background: var(--access-danger-soft); }
+.access-country-field > small { color: #b4414f; font-size: 12px; }
+
 .access-result { text-align: center; }
 
 .recovery-result { max-width: 400px; margin-inline: auto; }

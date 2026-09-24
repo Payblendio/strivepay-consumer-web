@@ -65,7 +65,7 @@ export function AccountTypeChoice(){
   </section>;
 }
 
-function AccountOption({title,description,imageSrc,busy,disabled,onClick}:{title:string;description:string;imageSrc:string;busy:boolean;disabled:boolean;onClick:()=>void}){
+export function AccountOption({title,description,imageSrc,busy,disabled,onClick}:{title:string;description:string;imageSrc:string;busy:boolean;disabled:boolean;onClick:()=>void}){
   return <button className="account-type-option" type="button" disabled={disabled} aria-busy={busy} onClick={onClick}>
     <span className="account-type-option-icon" aria-hidden="true"><Image src={imageSrc} alt="" width={128} height={128} sizes="(max-width: 430px) 62px, 78px" /></span>
     <span className="account-type-option-copy"><strong>{title}</strong><small>{description}</small></span>

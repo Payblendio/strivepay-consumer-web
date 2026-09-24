@@ -18,6 +18,12 @@ export const registerSchema = z.object({
     .regex(/\d/, "Add a number"),
 });
 
+export const businessRegistrationSchema = z.object({
+  legalName: z.string().trim().min(2, "Enter the legal company name"),
+  registrationNumber: z.string().trim().min(2, "Enter the company registration number"),
+  country: z.string().length(2, "Choose the country where the company is registered"),
+});
+
 export const forgotPasswordSchema = z.object({
   email: z.email("Enter a valid email address"),
 });

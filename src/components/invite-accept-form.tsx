@@ -7,11 +7,14 @@ import {isValidPhoneNumber,type Country,type Value} from "react-phone-number-inp
 import {AccessShell} from "@/components/access-shell";
 import {InternationalPhoneField} from "@/components/ui/international-phone-field";
 import {acceptInvitation,previewInvitation,roleLabel,type InvitationPreview} from "@/lib/team-api";
+import {supportedCodes,useJurisdictions} from "@/lib/jurisdictions";
 
 export function InviteAcceptScreen(){
   const router=useRouter();
   const params=useSearchParams();
   const tokenFromUrl=params.get("token")??"";
+  const {jurisdictions}=useJurisdictions();
+  const residenceCodes=useMemo(()=>jurisdictions?supportedCodes(jurisdictions,"individual") as Country[]:[],[jurisdictions]);
   const [token,setToken]=useState(tokenFromUrl);
   const [preview,setPreview]=useState<InvitationPreview|null>(null);
   const [previewBusy,setPreviewBusy]=useState(Boolean(tokenFromUrl.trim()));
@@ -116,6 +119,7 @@ export function InviteAcceptScreen(){
           className="access-phone-fields"
           country={country}
           value={phone}
+          allowedCountries={residenceCodes}
           error={phoneError}
           onCountryChange={next=>{
             setCountry(next);
