@@ -1,5 +1,3 @@
-import {useEffect,useState} from "react";
-
 export type CatalogNetwork={code:string;name:string;railLabel?:string|null;logoUrl?:string|null;addressFamily?:string|null;addressPlaceholder?:string|null;addressHint?:string|null;explorerTxUrl?:string|null};
 export type CatalogAsset={code:string;name:string;type:"CRYPTO"|"STABLECOIN"|string;decimalPlaces:number;coingeckoId?:string|null;logoUrl?:string|null;description?:string|null;websiteUrl?:string|null;whitepaperUrl?:string|null;explorerUrl?:string|null;sortOrder:number;featured:boolean;routeToken:boolean;networks:CatalogNetwork[]};
 
@@ -29,14 +27,13 @@ export function catalogNetwork(code:string|null|undefined){
   return null;
 }
 
-export function useAssetCatalog():CatalogAsset[]{
-  const [assets,setAssets]=useState<CatalogAsset[]>(snapshot);
-  useEffect(()=>{
-    listeners.add(setAssets);
-    void loadAssetCatalog();
-    return ()=>{listeners.delete(setAssets);};
-  },[]);
-  return assets;
+export function assetCatalogSnapshot(){
+  return snapshot;
+}
+
+export function subscribeAssetCatalog(listener:(assets:CatalogAsset[])=>void){
+  listeners.add(listener);
+  return ()=>{listeners.delete(listener);};
 }
 
 type RoutableAsset={code:string;name:string;type:string;sortOrder?:number|null;routeToken?:boolean|null;networks:Array<{code:string}>};

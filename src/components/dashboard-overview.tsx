@@ -20,7 +20,7 @@ import {
 import {CurrencyPairClip,tradePairAssets} from "./currency-pair-clip";
 import {fiatLogo} from "./money-route-controls";
 import {AssetLogo} from "./ui/crypto-logo";
-import {useAssetCatalog} from "@/lib/asset-catalog";
+import {useAssetCatalog} from "@/lib/use-asset-catalog";
 import {RateCalculator} from "./rate-calculator";
 
 export type DashboardTrade={

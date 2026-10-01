@@ -1,7 +1,8 @@
 "use client";
 
 import {useState} from "react";
-import {catalogAsset,catalogNetwork,useAssetCatalog} from "@/lib/asset-catalog";
+import {catalogAsset,catalogNetwork} from "@/lib/asset-catalog";
+import {useAssetCatalog} from "@/lib/use-asset-catalog";
 
 /** Remote logos come in square and round artwork; the frame crops every one to a circle. */
 function RoundLogo({src,label,size}:{src?:string|null;label:string;size:number}){

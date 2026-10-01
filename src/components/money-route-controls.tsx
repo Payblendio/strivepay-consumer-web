@@ -10,7 +10,8 @@ import {FIAT_FLAG} from "@/lib/fiat-currencies";
 import {catalogNetwork} from "@/lib/asset-catalog";
 import {AssetLogo,NetworkLogo} from "@/components/ui/crypto-logo";
 export {FIAT_RELEVANCE,FIAT_NAME,FIAT_FLAG} from "@/lib/fiat-currencies";
-export {routableAssets,useAssetCatalog} from "@/lib/asset-catalog";
+export {routableAssets} from "@/lib/asset-catalog";
+export {useAssetCatalog} from "@/lib/use-asset-catalog";
 
 export type SelectOption={value:string;label:string;detail:string;kind:"fiat"|"crypto"|"network"};
 export type SupportedBank={name:string;code?:string|null;accountType?:string|null;logoUrl?:string|null};

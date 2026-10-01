@@ -1,6 +1,6 @@
 "use client";
 
-import {useAssetCatalog} from "@/lib/asset-catalog";
+import {useAssetCatalog} from "@/lib/use-asset-catalog";
 
 const FIAT=[{code:"EUR",href:"/branding/fiat/eu.svg"},{code:"USD",href:"/branding/fiat/us.svg"},{code:"GBP",href:"/branding/fiat/gb.svg"}];
 

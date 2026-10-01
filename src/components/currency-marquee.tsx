@@ -1,7 +1,7 @@
 "use client";
 
 import {AssetLogo} from "./ui/crypto-logo";
-import {useAssetCatalog} from "@/lib/asset-catalog";
+import {useAssetCatalog} from "@/lib/use-asset-catalog";
 
 export function CurrencyMarquee(){
   const assets=useAssetCatalog();

@@ -14,7 +14,8 @@ import {customerFetch,setCustomerFetchAccountScope} from "@/lib/customer-session
 import {apiErrorMessage} from "@/lib/api-error";
 import {RouteError,sessionRequired,bankAccountItems,walletAddressValid} from "@/lib/money-route-api";
 import type {AccountScope} from "@/lib/account-scope";
-import {catalogNetwork,routableAssets,useAssetCatalog} from "@/lib/asset-catalog";
+import {catalogNetwork,routableAssets} from "@/lib/asset-catalog";
+import {useAssetCatalog} from "@/lib/use-asset-catalog";
 import {AssetLogo,NetworkLogo} from "@/components/ui/crypto-logo";
 import {BankForm,BankFormPayload,isDigitPayoutField,normalizeBankForm,normalizeFieldName,payoutFieldHint,payoutFieldKey,thirdPartyRecipientFields,visiblePayoutFields} from "./payout-form-schema";
 
