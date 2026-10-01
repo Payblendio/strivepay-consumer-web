@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import {AccessRoutePreview} from "./access-route-preview";
 import {BrandLogo} from "./brand-logo";
 import {ThemeToggle} from "./theme-toggle";
 
@@ -48,15 +49,7 @@ export function AccessShell({
               aria-label="A StrivePay conversion preview showing EUR, USD and GBP alongside BTC, ETH and USDC."
             >
               <div className="access-story-shape" aria-hidden="true" />
-              <div className="access-product-preview" aria-hidden="true">
-                <svg viewBox="0 0 600 350" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-                  <rect width="600" height="350" fill="#1A1C24"/>
-                  {[75,175,275].map(y=><g key={y} stroke="#3A6B72" strokeWidth="2"><path d={`M190 ${y} C240 ${y} 250 175 280 175`}/><path d={`M320 175 C350 175 360 ${y} 410 ${y}`}/></g>)}
-                  {[{code:"EUR",icon:"fiat/eu",x:25,y:50},{code:"USD",icon:"fiat/us",x:25,y:150},{code:"GBP",icon:"fiat/gb",x:25,y:250},{code:"BTC",icon:"crypto/btc",x:410,y:50},{code:"ETH",icon:"crypto/eth",x:410,y:150},{code:"USDC",icon:"crypto/usdc",x:410,y:250}].map(item=><g key={item.code} transform={`translate(${item.x} ${item.y})`}><rect width="165" height="50" fill="#12141A"/><image href={`/branding/${item.icon}.svg`} x="12" y="9" width="32" height="32"/><text x="56" y="31" fill="#F2F3F5" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="17">{item.code}</text></g>)}
-                  <circle cx="300" cy="175" r="42" fill="#162830" stroke="#2A5A62"/>
-                  <image href="/branding/strivepay-mark.svg" x="284" y="153" width="32" height="44"/>
-                </svg>
-              </div>
+              <AccessRoutePreview/>
 
               <Image
                 className="access-story-person"

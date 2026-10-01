@@ -7,6 +7,7 @@ import {IconAlertTriangle,IconArrowRight,IconBuildingBank,IconCheck,IconCopy,Ico
 import {useToast} from "@/components/ui/toast";
 import {moneyRouteApi} from "@/lib/money-route-api";
 import {CurrencyPairClip} from "./currency-pair-clip";
+import {defaultRouteToken} from "@/lib/asset-catalog";
 import {buyLane,type ReadyPreference} from "./ready-route-copy";
 import {networkLogo,networkRailLabel} from "./money-route-controls";
 import {
@@ -224,7 +225,7 @@ export function BuyRoutePage({orders,historyAvailable=true,historyPartial=false,
           return <article className={`activity-soft buy-deposit-card${!ready?" not-ready":""}`} key={account.id} role="listitem">
             <header className="buy-deposit-card-head">
               <span className="activity-direction">
-                <CurrencyPairClip from={account.currency} to={token||"USDC"} size="sm"/>
+                <CurrencyPairClip from={account.currency} to={token||defaultRouteToken()} size="sm"/>
                 <span className="buy-settlement-title">
                   <strong>{account.currency}{token?` → ${token}`:""}</strong>
                   <small>{account.bankName||account.accountName||`${account.currency} pay-in`}</small>
@@ -264,7 +265,7 @@ export function BuyRoutePage({orders,historyAvailable=true,historyPartial=false,
             <Link href={`/dashboard/activity/${encodeURIComponent(order.id)}`} className="activity-item">
               <div className="activity-item-lead">
                 <span className="activity-direction">
-                  <CurrencyPairClip from={order.fiatCurrency||"EUR"} to={order.cryptoAsset||"USDC"} size="sm"/>
+                  <CurrencyPairClip from={order.fiatCurrency||"EUR"} to={order.cryptoAsset||defaultRouteToken()} size="sm"/>
                   {tradeDirectionLabel("FIAT_TO_CRYPTO",order.status)}
                 </span>
                 <span className={`activity-status ${orderStatusClass(order.status)}`}>{formatOrderStatus(order.status)}</span>

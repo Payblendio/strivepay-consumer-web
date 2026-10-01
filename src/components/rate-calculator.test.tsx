@@ -8,12 +8,12 @@ const mocks=vi.hoisted(()=>({fetch:vi.fn(),country:"IT",setup:{approved:true} as
 vi.mock("next/navigation",()=>({useRouter:()=>({refresh:mocks.refresh})}));
 vi.mock("@/lib/customer-session",()=>({customerFetch:mocks.fetch}));
 vi.mock("./dashboard-customer",()=>({useDashboardCustomer:()=>({country:mocks.country,accountType:"PERSONAL"}),useDashboardSetup:()=>mocks.setup,useDashboardFinance:()=>({accountScope:"PERSONAL",canMutateFinances:true})}));
-vi.mock("./money-route-controls",()=>({ASSET_RELEVANCE:new Map([["BTC",0],["USDC",1],["USDT",2]]),COUNTRY_CURRENCY:{IT:"EUR",NG:"NGN",US:"USD"},assetLogo:()=>null,fiatLogo:()=>null,networkRailLabel:(code:string)=>code}));
+vi.mock("./money-route-controls",async importOriginal=>({...await importOriginal<typeof import("./money-route-controls")>(),assetLogo:()=>null,fiatLogo:()=>null,networkRailLabel:(code:string)=>code}));
 
 const coverage={
   fundingCurrencies:[{code:"EUR"},{code:"GBP"}],
   fiatCurrencies:[{code:"EUR"},{code:"USD"},{code:"GBP"},{code:"NGN"},{code:"CAD"}],
-  transferableAssets:[{code:"USDC",networks:[{code:"ETHEREUM"},{code:"POLYGON"}]},{code:"USDT",networks:[{code:"TRON"}]},{code:"BTC",networks:[{code:"BITCOIN"}]}],
+  transferableAssets:[{code:"USDC",sortOrder:30,routeToken:true,networks:[{code:"ETHEREUM"},{code:"POLYGON"}]},{code:"USDT",sortOrder:40,routeToken:true,networks:[{code:"TRON"}]},{code:"BTC",sortOrder:10,routeToken:false,networks:[{code:"BITCOIN"}]}],
 };
 function response(value:unknown,ok=true){return {ok,json:async()=>value} as Response;}
 function quote(amount=100,output=98,extras:Record<string,unknown>={}){

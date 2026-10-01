@@ -18,7 +18,9 @@ import {
   type AccountSetupState,
 } from "./dashboard-route-copy";
 import {CurrencyPairClip,tradePairAssets} from "./currency-pair-clip";
-import {assetLogo,fiatLogo} from "./money-route-controls";
+import {fiatLogo} from "./money-route-controls";
+import {AssetLogo} from "./ui/crypto-logo";
+import {useAssetCatalog} from "@/lib/asset-catalog";
 import {RateCalculator} from "./rate-calculator";
 
 export type DashboardTrade={
@@ -76,50 +78,7 @@ export function tradeChartData(trades:DashboardTrade[],today=new Date()){
   };
 }
 
-const supportedAssets=[
-  {symbol:"BTC",kind:"Coin",src:"/branding/crypto/btc.svg"},
-  {symbol:"Ethereum",kind:"Network",src:"/branding/networks/ETHEREUM.png"},
-  {symbol:"ETH",kind:"Coin",src:"/branding/crypto/eth.svg"},
-  {symbol:"USDC",kind:"Token",src:"/branding/tokens/USDC.png"},
-  {symbol:"Solana",kind:"Network",src:"/branding/networks/SOLANA.png"},
-  {symbol:"SOL",kind:"Coin",src:"/branding/crypto/sol.svg"},
-  {symbol:"USDT",kind:"Token",src:"/branding/tokens/USDT.png"},
-  {symbol:"Base",kind:"Network",src:"/branding/networks/BASE.png"},
-  {symbol:"XRP",kind:"Coin",src:"/branding/crypto/xrp.svg"},
-  {symbol:"Arbitrum",kind:"Network",src:"/branding/networks/ARBITRUM.png"},
-  {symbol:"BNB",kind:"Coin",src:"/branding/crypto/bnb.svg"},
-  {symbol:"BNB Chain",kind:"Network",src:"/branding/networks/BNB_SMART_CHAIN.png"},
-  {symbol:"EURC",kind:"Token",src:"/branding/tokens/EURC.png"},
-  {symbol:"ADA",kind:"Coin",src:"/branding/crypto/ada.svg"},
-  {symbol:"Polygon",kind:"Network",src:"/branding/networks/POLYGON.png"},
-  {symbol:"MATIC",kind:"Coin",src:"/branding/crypto/matic.svg"},
-  {symbol:"Avalanche",kind:"Network",src:"/branding/networks/AVALANCHE.png"},
-  {symbol:"DOGE",kind:"Coin",src:"/branding/crypto/doge.svg"},
-  {symbol:"CUSD",kind:"Token",src:"/branding/tokens/CUSD.png"},
-  {symbol:"Celo",kind:"Network",src:"/branding/networks/CELO.png"},
-  {symbol:"LINK",kind:"Coin",src:"/branding/crypto/link.svg"},
-  {symbol:"Optimism",kind:"Network",src:"/branding/networks/OP_MAINNET.png"},
-  {symbol:"XLM",kind:"Coin",src:"/branding/crypto/xlm.svg"},
-  {symbol:"Tron",kind:"Network",src:"/branding/networks/TRON.png"},
-  {symbol:"TRX",kind:"Coin",src:"/branding/crypto/trx.svg"},
-  {symbol:"CEUR",kind:"Token",src:"/branding/tokens/CEUR.png"},
-  {symbol:"DOT",kind:"Coin",src:"/branding/crypto/dot.svg"},
-  {symbol:"BCH",kind:"Coin",src:"/branding/crypto/bch.svg"},
-  {symbol:"AGEUR",kind:"Token",src:"/branding/tokens/AGEUR.png"},
-  {symbol:"LTC",kind:"Coin",src:"/branding/crypto/ltc.svg"},
-  {symbol:"USDC.E",kind:"Token",src:"/branding/tokens/USDCE.png"},
-  {symbol:"SHIB",kind:"Coin",src:"/branding/crypto/shib.svg"},
-  {symbol:"AAVE",kind:"Coin",src:"/branding/crypto/aave.svg"},
-  {symbol:"XTZ",kind:"Coin",src:"/branding/crypto/xtz.svg"},
-  {symbol:"FIL",kind:"Coin",src:"/branding/crypto/fil.svg"},
-  {symbol:"DASH",kind:"Coin",src:"/branding/crypto/dash.svg"},
-  {symbol:"CAKE",kind:"Coin",src:"/branding/crypto/cake.svg"},
-  {symbol:"AXS",kind:"Coin",src:"/branding/crypto/axs.svg"},
-  {symbol:"ONE",kind:"Coin",src:"/branding/crypto/one.svg"},
-  {symbol:"FLOKI",kind:"Coin",src:"/branding/crypto/floki.svg"},
-  {symbol:"BABYDOGE",kind:"Coin",src:"/branding/crypto/babydoge.svg"},
-  {symbol:"QDX",kind:"Coin",src:"/branding/crypto/qdx.svg"},
-];
+
 
 type SetupLeadCopy={
   eyebrow:string;
@@ -144,6 +103,13 @@ export function DashboardOverview({trades,tradeDataAvailable,partialData=false,h
   const router=useRouter();
   const [refreshing,startRefresh]=useTransition();
   const [assetsPaused,setAssetsPaused]=useState(false);
+  const catalog=useAssetCatalog();
+  const featured=catalog.filter(asset=>asset.featured).slice(0,3);
+  const supportedAssets=useMemo(()=>{
+    const networks=new Map<string,{symbol:string;kind:string;src?:string|null}>();
+    for(const asset of catalog)for(const network of asset.networks)if(!networks.has(network.code))networks.set(network.code,{symbol:network.name,kind:"Network",src:network.logoUrl});
+    return [...catalog.map(asset=>({symbol:asset.code.replace("_","."),kind:asset.type==="STABLECOIN"?"Token":"Coin",src:asset.logoUrl})),...networks.values()];
+  },[catalog]);
   const customer=useDashboardCustomer();
   const setup=useDashboardSetup();
   const {accountScope}=useDashboardFinance();
@@ -188,7 +154,7 @@ export function DashboardOverview({trades,tradeDataAvailable,partialData=false,h
         <div className="overview-route-logos" aria-hidden="true">
           <span className="overview-route-stack flags">{fiatLogo("EUR",26)}{fiatLogo("USD",26)}{fiatLogo("GBP",26)}</span>
           <IconArrowRight size={16}/>
-          <span className="overview-route-stack">{assetLogo("BTC",26)}{assetLogo("ETH",26)}{assetLogo("USDC",26)}</span>
+          <span className="overview-route-stack">{featured.map(asset=><AssetLogo key={asset.code} code={asset.code} url={asset.logoUrl} size={26}/>)}</span>
         </div>
         <span className="sell-destination-go">Open buy <IconArrowRight size={15}/></span>
       </Link>
@@ -199,7 +165,7 @@ export function DashboardOverview({trades,tradeDataAvailable,partialData=false,h
           <p>Send crypto. Proceeds settle to a verified account.</p>
         </div>
         <div className="overview-route-logos" aria-hidden="true">
-          <span className="overview-route-stack">{assetLogo("BTC",26)}{assetLogo("ETH",26)}{assetLogo("USDC",26)}</span>
+          <span className="overview-route-stack">{featured.map(asset=><AssetLogo key={asset.code} code={asset.code} url={asset.logoUrl} size={26}/>)}</span>
           <IconArrowRight size={16}/>
           <span className="overview-route-stack flags">{fiatLogo("EUR",26)}{fiatLogo("USD",26)}{fiatLogo("GBP",26)}</span>
         </div>
@@ -216,7 +182,7 @@ export function DashboardOverview({trades,tradeDataAvailable,partialData=false,h
         <div className="dashboard-asset-track" style={assetsPaused?{animationPlayState:"paused"}:undefined}>
           {[false,true].map(duplicate=><div className="dashboard-asset-group" aria-hidden={duplicate||undefined} key={duplicate?"duplicate":"primary"}>
             {supportedAssets.map(asset=><div className="dashboard-asset" key={`${duplicate?"duplicate":"primary"}-${asset.kind}-${asset.symbol}`}>
-              <Image src={asset.src} alt="" width={34} height={34} unoptimized/>
+              <AssetLogo code={asset.symbol} url={asset.src} size={34}/>
               <span><strong>{asset.symbol}</strong><small>{asset.kind}</small></span>
             </div>)}
           </div>)}

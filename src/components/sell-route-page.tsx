@@ -7,7 +7,7 @@ import {DepositQr} from "@/components/deposit-qr";
 import {useToast} from "@/components/ui/toast";
 import {moneyRouteApi,bankAccountItems,titleCase} from "@/lib/money-route-api";
 import {evmToTronAddress,isEvmReceivingAddress} from "@/lib/tron-address";
-import {ASSET_RELEVANCE,ROUTE_TOKENS,TARGET_NETWORKS,fiatLogo,networkRailLabel,RouteSelect,type SelectOption} from "./money-route-controls";
+import {fiatLogo,networkRailLabel,routableAssets,RouteSelect,type SelectOption} from "./money-route-controls";
 import {sortPayoutAccounts} from "./dashboard-route-copy";
 import {ComplianceRequiredGate,useComplianceApproved} from "./compliance-required-gate";
 import {useDashboardFinance} from "./dashboard-customer";
@@ -19,8 +19,8 @@ import {TransactionRealtimeRefresh} from "@/components/transaction-realtime-refr
 type ReadyPreference={fiatCurrency:string;token:string;network:string;routeType?:"NATIVE"|"COMPOSITE"|"STABLECOIN"};
 type BankAccount={id:string;accountName:string;currency:string;status:string;mainRecipient:boolean;accountMask?:string|null;accountNumber?:string|null;recipientType?:string|null;transferMethod?:string|null;receivingAddress?:string|null};
 type NativeDestination={id:string;accountName:string;maskedAccountNumber:string;accountNumber?:string|null;status:string;bankCode:string};
-type Network={code:string;name:string};
-type Asset={code:string;name:string;type:string;networks:Network[]};
+type Network={code:string;name:string;railLabel?:string|null};
+type Asset={code:string;name:string;type:string;sortOrder?:number|null;routeToken?:boolean|null;networks:Network[]};
 type Coverage={transferableAssets:Asset[]};
 type DepositAddress={payoutAccountId:string;asset:string;network:string;address:string;destinationTag?:string|null;active:boolean};
 type DisplayAccount={id:string;accountName:string;currency:string;status:string;mainRecipient:boolean;accountMask?:string|null;accountNumber?:string|null;recipientType?:string|null;transferMethod?:string|null;receivingAddress?:string|null;bankCode?:string|null;native:boolean};
@@ -94,10 +94,7 @@ async function fetchSellWorkspace():Promise<SellWorkspace>{
 }
 
 function sellDepositAssets(items:Asset[]){
-  return items
-    .filter(item=>item.type==="CRYPTO"&&item.networks.length>0||item.type==="STABLECOIN"&&ROUTE_TOKENS.has(item.code)&&item.networks.some(value=>TARGET_NETWORKS.has(value.code)))
-    .map(item=>({...item,networks:item.type==="CRYPTO"?item.networks:item.networks.filter(value=>TARGET_NETWORKS.has(value.code))}))
-    .sort((a,b)=>(ASSET_RELEVANCE.get(a.code)??Number.MAX_SAFE_INTEGER)-(ASSET_RELEVANCE.get(b.code)??Number.MAX_SAFE_INTEGER)||a.name.localeCompare(b.name));
+  return routableAssets(items);
 }
 
 function AccountMark({account,size=40}:{account:DisplayAccount;size?:number}){

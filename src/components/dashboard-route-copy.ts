@@ -1,3 +1,5 @@
+import {assetDecimals} from "@/lib/asset-catalog";
+
 export type BreadcrumbItem={label:string;href?:string};
 export type DashboardNavId="overview"|"buy"|"sell"|"activity"|"accounts"|"how-it-works"|"support";
 export type DashboardPageMeta={title:string;copy:string;active:DashboardNavId;index:string};
@@ -400,7 +402,7 @@ export function formatTradeAmount(amount:number|string|null|undefined,asset?:str
   const code=(asset||"").replace("_",".");
   if(!Number.isFinite(number))return code?`${amount} ${code}`:String(amount);
   const fiat=["EUR","USD","GBP","NGN"].includes((asset||"").toUpperCase());
-  const digits=fiat?2:(asset==="BTC"||asset==="ETH"?8:6);
+  const digits=fiat?2:assetDecimals((asset||"").toUpperCase());
   const formatted=number.toLocaleString("en",{maximumFractionDigits:digits,minimumFractionDigits:0});
   return code?`${formatted} ${code}`:formatted;
 }

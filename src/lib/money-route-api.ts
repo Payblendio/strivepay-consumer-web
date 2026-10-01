@@ -1,5 +1,6 @@
 import {customerFetch} from "@/lib/customer-session";
 import {apiErrorMessage} from "@/lib/api-error";
+import {catalogNetwork} from "@/lib/asset-catalog";
 
 export class RouteError extends Error{
   status:number;
@@ -42,15 +43,15 @@ export function titleCase(value:string){
   return value.replace(/([a-z0-9])([A-Z])/g,"$1 $2").replaceAll("_"," ").replace(/\b\w/g,letter=>letter.toUpperCase());
 }
 
-const EVM_NETWORKS=new Set(["ETHEREUM","BSC","BNB_SMART_CHAIN","POLYGON","OPTIMISM","OP_MAINNET","ARBITRUM","CELO","BASE","AVALANCHE","BNB","ETH"]);
 const BASE58="1-9A-HJ-NP-Za-km-z";
 
-/** Network-specific receiving-address pattern checks (format only, not on-chain). */
+/** Network-specific receiving-address pattern checks (format only, not on-chain), keyed by the catalog address family. */
 export function walletAddressValid(network:string,wallet:string){
   const address=wallet.trim();
   if(!address||/\s/.test(address))return false;
-  const net=network.trim().toUpperCase().replace(/[\s-]+/g,"_");
-  if(EVM_NETWORKS.has(net))return /^0x[0-9a-fA-F]{40}$/.test(address);
+  const code=network.trim().toUpperCase().replace(/[\s-]+/g,"_");
+  const net=catalogNetwork(code)?.addressFamily??code;
+  if(net==="EVM")return /^0x[0-9a-fA-F]{40}$/.test(address);
   if(net==="BITCOIN"||net==="BTC")return /^(bc1[ac-hj-np-z02-9]{11,71}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/i.test(address);
   if(net==="BITCOIN_CASH"||net==="BCH")return /^(bitcoincash:)?(q|p)[a-z0-9]{41}$/i.test(address)||/^[13][1-9A-HJ-NP-Za-km-z]{25,34}$/.test(address);
   if(net==="LITECOIN"||net==="LTC")return /^(ltc1[ac-hj-np-z02-9]{11,71}|[LM][1-9A-HJ-NP-Za-km-z]{25,34})$/i.test(address);

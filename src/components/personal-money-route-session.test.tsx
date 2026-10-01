@@ -12,7 +12,7 @@ vi.mock("react-circle-flags",()=>({CircleFlag:()=>null}));
 
 const customer={givenName:"Ada",familyName:"Test",email:"ada@example.test",country:"IT"};
 const preference={fiatCurrency:"EUR",token:"USDC",network:"POLYGON",routeType:"STABLECOIN",address:`0x${"1".repeat(40)}`};
-const coverage={fiatCurrencies:[{code:"EUR",name:"Euro"}],fundingCurrencies:[{code:"EUR",name:"Euro"}],transferableAssets:[{code:"USDC",name:"USD Coin",type:"STABLECOIN",networks:[{code:"POLYGON",name:"Polygon"}]}]};
+const coverage={fiatCurrencies:[{code:"EUR",name:"Euro"}],fundingCurrencies:[{code:"EUR",name:"Euro"}],transferableAssets:[{code:"USDC",name:"USD Coin",type:"STABLECOIN",sortOrder:30,routeToken:true,networks:[{code:"POLYGON",name:"Polygon"}]}]};
 function json(value:unknown,status=200){return new Response(JSON.stringify(value),{status,headers:{"Content-Type":"application/json"}});}
 
 function mockSetup(errorType:string,status=409){

@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {useState} from "react";
+import {AssetLogo} from "@/components/ui/crypto-logo";
 import {IconArrowDown, IconArrowRight, IconArrowsExchange, IconBuildingBank, IconCheck, IconCircleCheck, IconWallet} from "@tabler/icons-react";
 
 export function RoutePreview(){
@@ -17,9 +18,9 @@ export function RoutePreview(){
       <div className="landing-preview" aria-label={`${buying?"Buy":"Sell"} route illustration`}>
         <header><Image src="/branding/strivepay-mark.svg" width={25} height={30} alt=""/><span>YOUR MONEY ROUTE</span><IconArrowsExchange size={18}/></header>
         <div className="landing-preview-title"><span>{buying?"Bank → crypto":"Crypto → bank"}</span><h4>{buying?"A familiar way in.":"A simple way back."}</h4></div>
-        <div className="landing-preview-endpoint"><span className={`landing-preview-icon ${buying?"fiat":"token"}`}><Image src={buying?"/branding/fiat/eu.svg":"/branding/crypto/usdc.svg"} alt="" width={34} height={34}/></span><div><small>{buying?"PAY FROM":"SEND"}</small><strong>{buying?"Your EUR bank account":"USDC"}</strong></div>{buying?<IconBuildingBank size={19}/>:<span className="landing-network-label">Ethereum</span>}</div>
+        <div className="landing-preview-endpoint"><span className={`landing-preview-icon ${buying?"fiat":"token"}`}>{buying?<Image src="/branding/fiat/eu.svg" alt="" width={34} height={34}/>:<AssetLogo code="USDC" size={34}/>}</span><div><small>{buying?"PAY FROM":"SEND"}</small><strong>{buying?"Your EUR bank account":"USDC"}</strong></div>{buying?<IconBuildingBank size={19}/>:<span className="landing-network-label">Ethereum</span>}</div>
         <div className="landing-preview-connector"><span/><IconArrowDown size={17}/><span/><small>StrivePay connects the route</small></div>
-        <div className="landing-preview-endpoint"><span className={`landing-preview-icon ${buying?"token":"fiat"}`}><Image src={buying?"/branding/crypto/usdc.svg":"/branding/fiat/eu.svg"} alt="" width={34} height={34}/></span><div><small>{buying?"RECEIVE IN YOUR WALLET":"RECEIVE IN YOUR BANK"}</small><strong>{buying?"USDC on Ethereum":"Your EUR payout account"}</strong></div>{buying?<IconWallet size={19}/>:<IconBuildingBank size={19}/>}</div>
+        <div className="landing-preview-endpoint"><span className={`landing-preview-icon ${buying?"token":"fiat"}`}>{buying?<AssetLogo code="USDC" size={34}/>:<Image src="/branding/fiat/eu.svg" alt="" width={34} height={34}/>}</span><div><small>{buying?"RECEIVE IN YOUR WALLET":"RECEIVE IN YOUR BANK"}</small><strong>{buying?"USDC on Ethereum":"Your EUR payout account"}</strong></div>{buying?<IconWallet size={19}/>:<IconBuildingBank size={19}/>}</div>
         <div className="landing-preview-progress"><IconCircleCheck size={19}/><span>Every step, in view.</span><span className="landing-progress-dots"><i/><i/><i/></span></div>
         <footer>Illustrative route · availability varies</footer>
       </div>

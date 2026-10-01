@@ -1,20 +1,20 @@
 "use client";
 
-import Image from "next/image";
 import {useId,useMemo,useState} from "react";
 import {CircleFlag} from "react-circle-flags";
 import {IconBuildingBank,IconCheck,IconChevronDown,IconSearch} from "@tabler/icons-react";
 import {Modal} from "@/components/ui/modal";
 import {titleCase} from "@/lib/money-route-api";
 import {payoutFieldKey,type BankForm} from "./payout-form-schema";
+import {FIAT_FLAG} from "@/lib/fiat-currencies";
+import {catalogNetwork} from "@/lib/asset-catalog";
+import {AssetLogo,NetworkLogo} from "@/components/ui/crypto-logo";
+export {FIAT_RELEVANCE,FIAT_NAME,FIAT_FLAG} from "@/lib/fiat-currencies";
+export {routableAssets,useAssetCatalog} from "@/lib/asset-catalog";
 
 export type SelectOption={value:string;label:string;detail:string;kind:"fiat"|"crypto"|"network"};
 export type SupportedBank={name:string;code?:string|null;accountType?:string|null;logoUrl?:string|null};
 
-export const ROUTE_TOKENS=new Set(["USDC","USDC_E","USDT","CEUR","CUSD","AGEUR","EURC"]);
-export const TARGET_NETWORKS=new Set(["ETHEREUM","POLYGON","OPTIMISM","ARBITRUM","BASE","BSC","AVALANCHE","CELO","SOLANA","TRON"]);
-export const ASSET_RELEVANCE=new Map(["BTC","ETH","USDC","USDT","EURC","SOL","XRP","BNB","ADA","DOGE","MATIC","LTC","BCH","TRX","LINK","DOT","XLM","AAVE","SHIB","CAKE","FIL","USDC_E","CEUR","AGEUR","CUSD","DASH","XTZ","ONE","AXS","FLOKI","BABYDOGE","QDX"].map((code,index)=>[code,index]));
-export const FIAT_RELEVANCE=new Map(["EUR","GBP","USD","CAD","AED","NGN","SGD","JPY","INR","BRL","MXN","TRY","GHS","KES","ZMW","UGX","TZS","XAF","ARS","COP","IDR","PHP","PKR","VND","OMR","QAR","NPR","GTQ"].map((code,index)=>[code,index]));
 export const COUNTRY_CURRENCY:Record<string,string>={US:"USD",GB:"GBP",NG:"NGN",TR:"TRY",IN:"INR",PK:"PKR",BR:"BRL",AR:"ARS",ID:"IDR",KE:"KES",PH:"PHP",AE:"AED",VN:"VND",GH:"GHS",MX:"MXN",JP:"JPY",OM:"OMR",QA:"QAR",IT:"EUR",DE:"EUR",FR:"EUR",ES:"EUR",PT:"EUR",NL:"EUR",BE:"EUR",IE:"EUR",AT:"EUR",FI:"EUR",GR:"EUR",CY:"EUR",EE:"EUR",HR:"EUR",LT:"EUR",LU:"EUR",LV:"EUR",MT:"EUR",SI:"EUR",SK:"EUR"};
 
 /** USD is US-only; NGN is Nigeria-only. Other fiats stay available to any residence that already receives them. */
@@ -29,27 +29,15 @@ export function residenceAllowsCurrency(country:string|null|undefined,currency:s
 export function filterResidenceCurrencies<T extends string>(country:string|null|undefined,codes:T[]):T[]{
   return codes.filter(code=>residenceAllowsCurrency(country,code));
 }
-export const FIAT_NAME:Record<string,string>={AED:"UAE Dirham",ARS:"Argentine Peso",BRL:"Brazilian Real",CAD:"Canadian Dollar",COP:"Colombian Peso",EUR:"Euro",GBP:"British Pound",GHS:"Ghanaian Cedi",GTQ:"Guatemalan Quetzal",IDR:"Indonesian Rupiah",INR:"Indian Rupee",JPY:"Japanese Yen",KES:"Kenyan Shilling",MXN:"Mexican Peso",NGN:"Nigerian Naira",NPR:"Nepalese Rupee",OMR:"Omani Rial",PHP:"Philippine Peso",PKR:"Pakistani Rupee",QAR:"Qatari Riyal",SGD:"Singapore Dollar",TRY:"Turkish Lira",TZS:"Tanzanian Shilling",UGX:"Ugandan Shilling",USD:"US Dollar",VND:"Vietnamese Dong",XAF:"Central African CFA Franc",ZMW:"Zambian Kwacha"};
-export const FIAT_FLAG:Record<string,string>={USD:"us",EUR:"eu",GBP:"gb",NGN:"ng",AED:"ae",TRY:"tr",INR:"in",PKR:"pk",BRL:"br",ARS:"ar",CAD:"ca",COP:"co",IDR:"id",KES:"ke",PHP:"ph",VND:"vn",GHS:"gh",GTQ:"gt",MXN:"mx",JPY:"jp",NPR:"np",OMR:"om",QAR:"qa",SGD:"sg",TZS:"tz",UGX:"ug",XAF:"cm",ZMW:"zm"};
-const TOKEN_IMAGE:Record<string,string>={USDC:"USDC",USDC_E:"USDCE",USDT:"USDT",CEUR:"CEUR",CUSD:"CUSD",AGEUR:"AGEUR",EURC:"EURC"};
-const NETWORK_IMAGE:Record<string,string>={ETHEREUM:"ETHEREUM",POLYGON:"POLYGON",OPTIMISM:"OP_MAINNET",ARBITRUM:"ARBITRUM",BASE:"BASE",BSC:"BNB_SMART_CHAIN",AVALANCHE:"AVALANCHE",CELO:"CELO",SOLANA:"SOLANA",TRON:"TRON"};
-/** Native-coin rails reuse the crypto asset mark; we only ship dedicated PNGs for multi-network L1/L2s. */
-const NATIVE_NETWORK_CRYPTO:Record<string,string>={BITCOIN:"btc",LITECOIN:"ltc",DOGE:"doge",DASH:"dash",RIPPLE:"xrp",BITCOIN_CASH:"bch",CARDANO:"ada",STELLAR:"xlm",BNB:"bnb",SOL:"sol",ETH:"eth",TRX:"trx",MATIC:"matic"};
-/** Wallet-facing rail labels (ERC20 / TRC20 / …) instead of “{ASSET} network”. */
-const NETWORK_RAIL:Record<string,string>={ETHEREUM:"ERC20",TRON:"TRC20",BSC:"BEP20",POLYGON:"Polygon",SOLANA:"SPL",ARBITRUM:"Arbitrum One",OPTIMISM:"OP Mainnet",BASE:"Base",AVALANCHE:"Avalanche C-Chain",CELO:"Celo",BITCOIN:"Bitcoin",LITECOIN:"Litecoin",DOGE:"Dogecoin",DASH:"Dash",RIPPLE:"XRP Ledger",BITCOIN_CASH:"Bitcoin Cash",CARDANO:"Cardano",STELLAR:"Stellar"};
-
-export function assetLogo(code:string,size=32){
-  return ROUTE_TOKENS.has(code)?<Image src={`/branding/tokens/${TOKEN_IMAGE[code]??code}.png`} alt={code.replace("_",".")} width={size} height={size}/>:<Image src={`/branding/crypto/${code.toLowerCase()}.svg`} alt={code} width={size} height={size}/>;
+export function assetLogo(code:string,size=32,url?:string|null){
+  return <AssetLogo code={code} size={size} url={url}/>;
 }
-export function networkLogo(code:string,size=32){
-  const file=NETWORK_IMAGE[code];
-  if(file)return <Image src={`/branding/networks/${file}.png`} alt={titleCase(code)} width={size} height={size}/>;
-  const crypto=NATIVE_NETWORK_CRYPTO[code];
-  if(crypto)return <Image src={`/branding/crypto/${crypto}.svg`} alt={titleCase(code)} width={size} height={size}/>;
-  return <Image src={`/branding/crypto/${code.toLowerCase()}.svg`} alt={titleCase(code)} width={size} height={size}/>;
+export function networkLogo(code:string,size=32,url?:string|null){
+  return <NetworkLogo code={code} size={size} url={url}/>;
 }
+/** Wallet-facing rail labels (ERC20 / TRC20 / …) come from the network catalog. */
 export function networkRailLabel(code:string){
-  return NETWORK_RAIL[code]??titleCase(code);
+  return catalogNetwork(code)?.railLabel??titleCase(code);
 }
 export function fiatLogo(code:string,size=34){
   return <span className="route-option-logo fiat" suppressHydrationWarning><CircleFlag countryCode={FIAT_FLAG[code]??"un"} height={String(size)}/></span>;

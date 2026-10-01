@@ -6,6 +6,7 @@ import {IconAlertTriangle,IconArrowLeft,IconArrowRight,IconCheck,IconCopy,IconLo
 import {useToast} from "@/components/ui/toast";
 import {bankAccountItems,moneyRouteApi,type BankAccountPage} from "@/lib/money-route-api";
 import {CurrencyPairClip} from "./currency-pair-clip";
+import {defaultRouteToken} from "@/lib/asset-catalog";
 import {type ReadyPreference} from "./ready-route-copy";
 import {fiatLogo,networkRailLabel} from "./money-route-controls";
 import {sortPayoutAccounts} from "./dashboard-route-copy";
@@ -397,7 +398,7 @@ export function AccountsPage(){
           return <article className={`activity-soft buy-deposit-card${!ready?" not-ready":""}`} key={account.id} role="listitem">
             <header className="buy-deposit-card-head">
               <span className="activity-direction">
-                <CurrencyPairClip from={account.currency} to={pairTo==="crypto"?"USDC":pairTo} size="sm"/>
+                <CurrencyPairClip from={account.currency} to={pairTo==="crypto"?defaultRouteToken():pairTo} size="sm"/>
                 <span className="buy-settlement-title">
                   <strong>{account.currency}{token?` → ${token}`:""}</strong>
                   <small>{account.bankName||account.accountName||`${account.currency} pay-in`}</small>

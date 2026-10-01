@@ -1,19 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {useEffect,useState} from "react";
 import {CircleFlag} from "react-circle-flags";
 import {IconArrowRight,IconLoader2} from "@tabler/icons-react";
 import {customerFetch} from "@/lib/customer-session";
 import {apiErrorMessage} from "@/lib/api-error";
+import {AssetLogo} from "@/components/ui/crypto-logo";
 import {buyLane,sellLane,type ReadyLane,type ReadyPreference,type ReadyFunding,type ReadyPayout} from "./ready-route-copy";
 
 type BankAccount={accountName:string;currency:string;mainRecipient:boolean;accountMask?:string|null};
 type NativeDestination={accountName:string;maskedAccountNumber:string};
 
-const ROUTE_TOKENS=new Set(["USDC","USDC_E","USDT","CEUR","CUSD","AGEUR","EURC"]);
-const TOKEN_IMAGE:Record<string,string>={USDC:"USDC",USDC_E:"USDCE",USDT:"USDT",CEUR:"CEUR",CUSD:"CUSD",AGEUR:"AGEUR",EURC:"EURC"};
 const FIAT_FLAG:Record<string,string>={USD:"us",EUR:"eu",GBP:"gb",NGN:"ng",AED:"ae",TRY:"tr",INR:"in",PKR:"pk",BRL:"br",ARS:"ar",CAD:"ca",COP:"co",IDR:"id",KES:"ke",PHP:"ph",VND:"vn",GHS:"gh",GTQ:"gt",MXN:"mx",JPY:"jp",NPR:"np",OMR:"om",QAR:"qa",SGD:"sg",TZS:"tz",UGX:"ug",XAF:"cm",ZMW:"zm"};
 
 class RouteError extends Error{status:number;constructor(message:string,status:number){super(message);this.status=status;}}
@@ -24,7 +22,7 @@ async function api<T>(path:string):Promise<T>{
   return value as T;
 }
 
-function assetLogo(code:string,size=32){return ROUTE_TOKENS.has(code)?<Image src={`/branding/tokens/${TOKEN_IMAGE[code]??code}.png`} alt={code.replace("_",".")} width={size} height={size}/>:<Image src={`/branding/crypto/${code.toLowerCase()}.svg`} alt={code} width={size} height={size}/>;}
+function assetLogo(code:string,size=32){return <AssetLogo code={code} size={size}/>;}
 function fiatLogo(code:string,size=34){return <span className="route-option-logo fiat"><CircleFlag countryCode={FIAT_FLAG[code]??"un"} height={String(size)}/></span>;}
 function LaneLogos({lane,buy}:{lane:ReadyLane;buy:boolean}){
   const fiat=fiatLogo(lane.fiat,36);

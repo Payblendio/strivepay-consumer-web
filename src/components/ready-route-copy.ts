@@ -1,3 +1,5 @@
+import {defaultRouteToken} from "@/lib/asset-catalog";
+
 export type ReadyPreference={fiatCurrency:string;token:string;network:string;routeType?:"NATIVE"|"COMPOSITE"|"STABLECOIN";address?:string|null};
 export type ReadyFunding={currency?:string;accountMask?:string|null;accountNumber?:string|null;bankName?:string|null;bankCode?:string|null;routingMask?:string|null;routingNumber?:string|null;accountName?:string|null;status?:string;id?:string};
 export type ReadyPayout={currency?:string;accountName?:string;accountMask?:string};
@@ -21,7 +23,7 @@ export function buyLane(preference:ReadyPreference|null,funding:ReadyFunding|nul
     line:`Send ${fiat} to your pay-in account. ${token} arrives on ${network}.`,
     from:`Pay-in · ${payInLabel(funding)}`,
     to:wallet?`Wallet · ${wallet}`:"Your wallet",
-    fiat,token:preference?.token||"USDC",
+    fiat,token:preference?.token||defaultRouteToken(),
   };
 }
 
@@ -35,6 +37,6 @@ export function sellLane(preference:ReadyPreference|null,payout:ReadyPayout|null
     line:`Send ${token}. ${fiat} settles to your payout account.`,
     from:wallet?`Wallet · ${wallet}`:"Your wallet",
     to:accountLabel(payout?.accountName,payout?.accountMask),
-    fiat,token:preference?.token||"USDC",
+    fiat,token:preference?.token||defaultRouteToken(),
   };
 }

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { AssetLogo } from "@/components/ui/crypto-logo";
 
 /**
  * Auth0-style floating product proof for the hero:
@@ -35,7 +36,7 @@ export function HeroRouteVisual() {
             <div className="lp-hero-quote-value">
               <b>113.68</b>
               <span className="lp-hero-quote-asset">
-                <Image src="/branding/crypto/usdc.svg" alt="" width={28} height={28} />
+                <AssetLogo code="USDC" size={28} />
                 USDC
               </span>
             </div>

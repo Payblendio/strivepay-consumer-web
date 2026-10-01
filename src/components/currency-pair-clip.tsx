@@ -1,6 +1,7 @@
 "use client";
 
 import {assetLogo,FIAT_FLAG,fiatLogo} from "./money-route-controls";
+import {defaultRouteToken} from "@/lib/asset-catalog";
 
 const PIXELS={sm:24,md:30,lg:36} as const;
 
@@ -33,6 +34,6 @@ export function CurrencyPairClip({
 }
 
 export function tradePairAssets(buy:boolean,sourceAsset?:string|null,destinationAsset?:string|null){
-  if(buy)return{from:sourceAsset||"EUR",to:destinationAsset||"USDC"};
-  return{from:sourceAsset||"USDC",to:destinationAsset||"EUR"};
+  if(buy)return{from:sourceAsset||"EUR",to:destinationAsset||defaultRouteToken()};
+  return{from:sourceAsset||defaultRouteToken(),to:destinationAsset||"EUR"};
 }

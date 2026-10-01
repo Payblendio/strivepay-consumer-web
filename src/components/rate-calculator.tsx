@@ -5,7 +5,8 @@ import {useRouter} from "next/navigation";
 import {useEffect,useMemo,useState} from "react";
 import {IconArrowsUpDown,IconLoader2,IconChevronDown} from "@tabler/icons-react";
 import {customerFetch} from "@/lib/customer-session";
-import {ASSET_RELEVANCE,COUNTRY_CURRENCY,assetLogo,fiatLogo,networkRailLabel,residenceAllowsCurrency} from "./money-route-controls";
+import {COUNTRY_CURRENCY,assetLogo,fiatLogo,networkRailLabel,residenceAllowsCurrency} from "./money-route-controls";
+import {assetDecimals} from "@/lib/asset-catalog";
 import {useDashboardCustomer,useDashboardFinance,useDashboardSetup} from "./dashboard-customer";
 import {accountSetupHref} from "./dashboard-route-copy";
 import "./rate-calculator.css";
@@ -13,7 +14,7 @@ import "./rate-calculator.css";
 type Direction="buy"|"sell";
 type Quote={sourceAsset:string;sourceAmount:number;destinationAsset:string;destinationNetwork?:string|null;destinationAmount:number;customerFee?:number;expiresAt:string;pricingMode?:string};
 type Preference={fiatCurrency?:string;token?:string;network?:string};
-type Asset={code:string;networks:{code:string;name?:string}[]};
+type Asset={code:string;sortOrder?:number|null;routeToken?:boolean|null;networks:{code:string;name?:string;railLabel?:string|null}[]};
 type Coverage={fiatCurrencies:{code:string}[];fundingCurrencies:{code:string}[];transferableAssets:Asset[]};
 type Estimate={key:string;status:"loading"|"ready"|"error"|"expired";quote?:Quote};
 
@@ -23,11 +24,10 @@ const FIAT=["EUR","USD","GBP","NGN"];
 const UNAVAILABLE="An estimate is unavailable right now. Try again.";
 
 function defaultNetwork(asset:Asset){
-  const preferred:Record<string,string>={BTC:"BITCOIN",ETH:"ETHEREUM",SOL:"SOLANA",USDT:"TRON",USDC:"ARBITRUM"};
-  return asset.networks.find(item=>item.code===preferred[asset.code])?.code??asset.networks[0]?.code??"";
+  return asset.networks[0]?.code??"";
 }
 function formatAmount(value:number,asset:string){
-  const digits=FIAT.includes(asset)?2:asset==="BTC"||asset==="ETH"?8:6;
+  const digits=FIAT.includes(asset)?2:assetDecimals(asset);
   return value.toLocaleString("en",{maximumFractionDigits:digits,minimumFractionDigits:0});
 }
 function parseAmount(value:string){
@@ -41,7 +41,7 @@ function usableCoverage(value:Coverage):Coverage{
     fundingCurrencies:value.fundingCurrencies.filter(item=>FIAT.includes(item.code)),
     transferableAssets:value.transferableAssets.filter(item=>item.code&&Array.isArray(item.networks)&&item.networks.some(network=>network.code))
       .map(item=>({...item,networks:item.networks.filter(network=>network.code)}))
-      .sort((a,b)=>(ASSET_RELEVANCE.get(a.code)??999)-(ASSET_RELEVANCE.get(b.code)??999)||a.code.localeCompare(b.code)),
+      .sort((a,b)=>(a.sortOrder??Number.MAX_SAFE_INTEGER)-(b.sortOrder??Number.MAX_SAFE_INTEGER)||a.code.localeCompare(b.code)),
   };
 }
 async function requestQuote(direction:Direction,body:Record<string,unknown>,signal:AbortSignal):Promise<Quote>{
@@ -66,7 +66,7 @@ export function RateCalculator(){
   const home=COUNTRY_CURRENCY[customer.country?.toUpperCase()??""]??"EUR";
   const [direction,setDirection]=useState<Direction>("buy");
   const [fiat,setFiat]=useState(home);
-  const [crypto,setCrypto]=useState("USDC");
+  const [crypto,setCrypto]=useState("");
   const [network,setNetwork]=useState("");
   const [sourceText,setSourceText]=useState("100");
   const [coverage,setCoverage]=useState<Coverage|null>(null);
@@ -91,7 +91,7 @@ export function RateCalculator(){
       const preference=(Array.isArray(saved)?saved[0]:null) as Preference|null;
       const funding=next.fundingCurrencies.filter(item=>residenceAllowsCurrency(customer.country,item.code));
       const nextFiat=funding.find(item=>item.code===preference?.fiatCurrency)?.code??funding.find(item=>item.code===home)?.code??funding[0]?.code??"";
-      const nextAsset=next.transferableAssets.find(item=>item.code===preference?.token)??next.transferableAssets.find(item=>item.code==="USDC")??next.transferableAssets[0];
+      const nextAsset=next.transferableAssets.find(item=>item.code===preference?.token)??next.transferableAssets.find(item=>item.routeToken)??next.transferableAssets[0];
       setFiat(nextFiat);setCrypto(nextAsset?.code??"");
       setNetwork(nextAsset?(nextAsset.networks.find(item=>nextAsset.code===preference?.token&&item.code===preference.network)?.code??defaultNetwork(nextAsset)):"");
       setCoverage({...next,fundingCurrencies:funding,fiatCurrencies:next.fiatCurrencies.filter(item=>residenceAllowsCurrency(customer.country,item.code))});setCoverageError(false);
