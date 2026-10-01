@@ -133,15 +133,39 @@ describe("rate estimate safety",()=>{
     expect(screen.getByRole("button",{name:"Refresh estimate"})).toBeInTheDocument();
   });
 
-  it("shows NGN eligibility honestly without silently selecting EUR",async()=>{
+  it("estimates NGN buys only on NGN networks and deducts the network fee",async()=>{
     mocks.country="NG";
-    mocks.fetch.mockImplementation(async(url:string)=>url.endsWith("/coverage")?response({...coverage,fundingCurrencies:[{code:"NGN"}]}):response([{fiatCurrency:"EUR",token:"USDC",network:"BITCOIN"}]));
-    await mount();await tick();
-    expect(screen.getByRole("combobox",{name:"Funding currency"})).toHaveValue("NGN");
-    expect(screen.getByRole("combobox",{name:"Network"})).toHaveValue("ETHEREUM");
-    expect(screen.getByText("Buy estimates aren’t available for NGN yet.")).toBeInTheDocument();
-    expect(quoteCalls()).toHaveLength(0);
-    expect(screen.getByRole("link",{name:"Continue to buy"})).toHaveAttribute("href","/dashboard/buy");
+    const ngnCoverage={...coverage,fundingCurrencies:[{code:"NGN"}],transferableAssets:[
+      {code:"USDC",sortOrder:30,routeToken:true,networks:[{code:"ARBITRUM"}],ngnBuyNetworks:[],ngnSellNetworks:[]},
+      {code:"USDT",sortOrder:40,routeToken:true,networks:[{code:"TRON"}],ngnBuyNetworks:[{code:"TRON"},{code:"BSC"}],ngnSellNetworks:[{code:"TRON"}]},
+    ]};
+    mocks.fetch.mockImplementation(async(url:string)=>url.endsWith("/coverage")?response(ngnCoverage):url.endsWith("/preferences")?response([{fiatCurrency:"NGN",token:"USDC",network:"ARBITRUM"}])
+      :quote(10000,6.5,{sourceAsset:"NGN",destinationAsset:"USDT",destinationNetwork:"TRON",customerFee:100,networkFee:1,networkFeeAsset:"USDT"}));
+    await mount();
+    fireEvent.change(screen.getByLabelText("NGN amount"),{target:{value:"10000"}});await tick();
+    expect(within(screen.getByRole("combobox",{name:"Crypto asset"})).getAllByRole("option").map(option=>option.textContent)).toEqual(["USDT"]);
+    expect(within(screen.getByRole("combobox",{name:"Network"})).getAllByRole("option").map(option=>option.textContent)).toEqual(["TRON","BSC"]);
+    expect(JSON.parse(quoteCalls()[0][1].body)).toEqual({sourceAsset:"NGN",sourceAmount:10000,destinationAsset:"USDT",destinationNetwork:"TRON"});
+    expect(screen.getByLabelText("USDT estimated amount")).toHaveValue("5.5");
+    expect(screen.getByText("100 NGN")).toBeInTheDocument();
+    expect(screen.getByText("1 USDT")).toBeInTheDocument();
+  });
+
+  it("estimates NGN sells only from NGN deposit networks",async()=>{
+    mocks.country="NG";
+    const ngnCoverage={...coverage,fundingCurrencies:[{code:"NGN"}],transferableAssets:[
+      {code:"USDC",sortOrder:30,routeToken:true,networks:[{code:"ARBITRUM"}],ngnBuyNetworks:[],ngnSellNetworks:[{code:"BASE"}]},
+    ]};
+    mocks.fetch.mockImplementation(async(url:string)=>url.endsWith("/coverage")?response(ngnCoverage):url.endsWith("/preferences")?response([])
+      :quote(100,148500,{sourceAsset:"USDC",destinationAsset:"NGN",destinationNetwork:null,customerFee:1500}));
+    await mount();
+    fireEvent.click(screen.getByRole("button",{name:"Swap buy and sell"}));
+    expect(screen.getByRole("combobox",{name:"Payout currency"})).toHaveValue("NGN");
+    fireEvent.change(screen.getByLabelText("USDC amount"),{target:{value:"100"}});await tick();
+    expect(within(screen.getByRole("combobox",{name:"Network"})).getAllByRole("option").map(option=>option.textContent)).toEqual(["BASE"]);
+    expect(JSON.parse(quoteCalls().at(-1)![1].body)).toEqual({sourceAsset:"USDC",sourceNetwork:"BASE",sourceAmount:100,destinationFiat:"NGN"});
+    expect(screen.getByLabelText("NGN estimated amount")).toHaveValue("148,500");
+    expect(screen.getByText("1,500 NGN")).toBeInTheDocument();
   });
 
   it("offers recovery after a coverage failure without guessing supported routes",async()=>{

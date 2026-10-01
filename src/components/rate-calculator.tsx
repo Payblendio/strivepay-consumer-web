@@ -12,9 +12,10 @@ import {accountSetupHref} from "./dashboard-route-copy";
 import "./rate-calculator.css";
 
 type Direction="buy"|"sell";
-type Quote={sourceAsset:string;sourceAmount:number;destinationAsset:string;destinationNetwork?:string|null;destinationAmount:number;customerFee?:number;expiresAt:string;pricingMode?:string};
+type Quote={sourceAsset:string;sourceAmount:number;destinationAsset:string;destinationNetwork?:string|null;destinationAmount:number;customerFee?:number;networkFee?:number|null;networkFeeAsset?:string|null;expiresAt:string;pricingMode?:string};
 type Preference={fiatCurrency?:string;token?:string;network?:string};
-type Asset={code:string;sortOrder?:number|null;routeToken?:boolean|null;networks:{code:string;name?:string;railLabel?:string|null}[]};
+type Network={code:string;name?:string;railLabel?:string|null};
+type Asset={code:string;sortOrder?:number|null;routeToken?:boolean|null;networks:Network[];ngnBuyNetworks?:Network[];ngnSellNetworks?:Network[]};
 type Coverage={fiatCurrencies:{code:string}[];fundingCurrencies:{code:string}[];transferableAssets:Asset[]};
 type Estimate={key:string;status:"loading"|"ready"|"error"|"expired";quote?:Quote};
 
@@ -23,8 +24,14 @@ type Estimate={key:string;status:"loading"|"ready"|"error"|"expired";quote?:Quot
 const FIAT=["EUR","USD","GBP","NGN"];
 const UNAVAILABLE="An estimate is unavailable right now. Try again.";
 
-function defaultNetwork(asset:Asset){
-  return asset.networks[0]?.code??"";
+/** NGN buys and sells run on the exchange rail, so they only use the networks it supports. */
+function routeNetworks(asset:Asset|undefined,direction:Direction,fiat:string):Network[]{
+  if(!asset)return [];
+  if(fiat!=="NGN")return asset.networks;
+  return (direction==="buy"?asset.ngnBuyNetworks:asset.ngnSellNetworks)??[];
+}
+function defaultNetwork(asset:Asset,direction:Direction="buy",fiat=""){
+  return routeNetworks(asset,direction,fiat)[0]?.code??"";
 }
 function formatAmount(value:number,asset:string){
   const digits=FIAT.includes(asset)?2:assetDecimals(asset);
@@ -34,13 +41,17 @@ function parseAmount(value:string){
   const cleaned=value.replace(/,/g,"").trim();
   return /^(?:\d+\.?\d*|\.\d+)$/.test(cleaned)&&Number.isFinite(Number(cleaned))?Number(cleaned):0;
 }
+function validNetworks(value:Network[]|undefined){
+  return Array.isArray(value)?value.filter(network=>network?.code):[];
+}
 function usableCoverage(value:Coverage):Coverage{
   if(!Array.isArray(value?.fundingCurrencies)||!Array.isArray(value?.fiatCurrencies)||!Array.isArray(value?.transferableAssets))throw new Error(UNAVAILABLE);
   return {
     fiatCurrencies:value.fiatCurrencies.filter(item=>FIAT.includes(item.code)),
     fundingCurrencies:value.fundingCurrencies.filter(item=>FIAT.includes(item.code)),
-    transferableAssets:value.transferableAssets.filter(item=>item.code&&Array.isArray(item.networks)&&item.networks.some(network=>network.code))
-      .map(item=>({...item,networks:item.networks.filter(network=>network.code)}))
+    transferableAssets:value.transferableAssets.filter(item=>item.code&&Array.isArray(item.networks))
+      .map(item=>({...item,networks:validNetworks(item.networks),ngnBuyNetworks:validNetworks(item.ngnBuyNetworks),ngnSellNetworks:validNetworks(item.ngnSellNetworks)}))
+      .filter(item=>item.networks.length||item.ngnBuyNetworks.length||item.ngnSellNetworks.length)
       .sort((a,b)=>(a.sortOrder??Number.MAX_SAFE_INTEGER)-(b.sortOrder??Number.MAX_SAFE_INTEGER)||a.code.localeCompare(b.code)),
   };
 }
@@ -55,7 +66,8 @@ async function requestQuote(direction:Direction,body:Record<string,unknown>,sign
     ||!Number.isFinite(Date.parse(value.expiresAt))||Date.parse(value.expiresAt)<=Date.now()
     ||(direction==="buy"&&value.destinationNetwork!==body.destinationNetwork)
     ||(value.customerFee!=null&&(!Number.isFinite(Number(value.customerFee))||Number(value.customerFee)<0)))throw new Error(UNAVAILABLE);
-  return {...value,sourceAmount:Number(value.sourceAmount),destinationAmount:Number(value.destinationAmount),customerFee:value.customerFee==null?undefined:Number(value.customerFee)};
+  const networkFee=value.networkFee==null?null:Number(value.networkFee);
+  return {...value,sourceAmount:Number(value.sourceAmount),destinationAmount:Number(value.destinationAmount),customerFee:value.customerFee==null?undefined:Number(value.customerFee),networkFee:networkFee!=null&&Number.isFinite(networkFee)&&networkFee>0?networkFee:null};
 }
 
 export function RateCalculator(){
@@ -91,9 +103,10 @@ export function RateCalculator(){
       const preference=(Array.isArray(saved)?saved[0]:null) as Preference|null;
       const funding=next.fundingCurrencies.filter(item=>residenceAllowsCurrency(customer.country,item.code));
       const nextFiat=funding.find(item=>item.code===preference?.fiatCurrency)?.code??funding.find(item=>item.code===home)?.code??funding[0]?.code??"";
-      const nextAsset=next.transferableAssets.find(item=>item.code===preference?.token)??next.transferableAssets.find(item=>item.routeToken)??next.transferableAssets[0];
+      const routable=next.transferableAssets.filter(item=>routeNetworks(item,"buy",nextFiat).length>0);
+      const nextAsset=routable.find(item=>item.code===preference?.token)??routable.find(item=>item.routeToken)??routable[0];
       setFiat(nextFiat);setCrypto(nextAsset?.code??"");
-      setNetwork(nextAsset?(nextAsset.networks.find(item=>nextAsset.code===preference?.token&&item.code===preference.network)?.code??defaultNetwork(nextAsset)):"");
+      setNetwork(nextAsset?(routeNetworks(nextAsset,"buy",nextFiat).find(item=>nextAsset.code===preference?.token&&item.code===preference.network)?.code??defaultNetwork(nextAsset,"buy",nextFiat)):"");
       setCoverage({...next,fundingCurrencies:funding,fiatCurrencies:next.fiatCurrencies.filter(item=>residenceAllowsCurrency(customer.country,item.code))});setCoverageError(false);
     }).catch(()=>{if(active)setCoverageError(true);}).finally(()=>window.clearTimeout(timeout));
     return()=>{active=false;controller.abort();window.clearTimeout(timeout);};
@@ -103,21 +116,22 @@ export function RateCalculator(){
     const list=(direction==="buy"?coverage?.fundingCurrencies:coverage?.fiatCurrencies)?.map(item=>item.code)??[];
     return list.filter(code=>residenceAllowsCurrency(customer.country,code));
   },[coverage,direction,customer.country]);
-  const cryptoOptions=coverage?.transferableAssets.map(item=>item.code)??[];
-  const networks=coverage?.transferableAssets.find(item=>item.code===crypto)?.networks??[];
+  const cryptoOptions=coverage?.transferableAssets.filter(item=>routeNetworks(item,direction,fiat).length>0).map(item=>item.code)??[];
+  const networks=routeNetworks(coverage?.transferableAssets.find(item=>item.code===crypto),direction,fiat);
   const sourceAsset=direction==="buy"?fiat:crypto;
   const destinationAsset=direction==="buy"?crypto:fiat;
   const sourceAmount=parseAmount(sourceText);
   const supported=!!coverage&&fiatOptions.includes(fiat)&&cryptoOptions.includes(crypto)&&networks.some(item=>item.code===network);
-  const unsupportedBuy=direction==="buy"&&fiat==="NGN";
-  const canEstimate=supported&&!unsupportedBuy&&sourceAmount>0;
+  const canEstimate=supported&&sourceAmount>0;
   const key=JSON.stringify([direction,fiat,crypto,network,sourceText,attempt]);
   const current=estimate?.key===key?estimate:null;
   // Never show a previous request while a new amount or route debounces.
   const quote=canEstimate&&current?.status==="ready"?current.quote??null:null;
   const busy=canEstimate&&(!current||current.status==="loading");
   const expired=canEstimate&&current?.status==="expired";
-  const destinationText=quote?formatAmount(quote.destinationAmount,destinationAsset):"";
+  const networkFee=quote?.networkFee&&(quote.networkFeeAsset??quote.destinationAsset)===quote.destinationAsset?quote.networkFee:null;
+  const receiveAmount=quote?Math.max(0,quote.destinationAmount-(networkFee??0)):0;
+  const destinationText=quote?formatAmount(receiveAmount,destinationAsset):"";
   const ctaHref=setup&&!setup.approved?accountSetupHref(customer.accountType,accountScope):direction==="buy"?"/dashboard/buy":"/dashboard/sell";
   const ctaLabel=setup&&!setup.approved?"Complete compliance first":direction==="buy"?"Continue to buy":"Continue to sell";
 
@@ -150,19 +164,27 @@ export function RateCalculator(){
     return()=>{window.clearTimeout(timer);window.removeEventListener("focus",expire);document.removeEventListener("visibilitychange",expire);};
   },[estimate]);
 
+  function alignRoute(nextDirection:Direction,nextFiat:string){
+    const assets=coverage?.transferableAssets.filter(item=>routeNetworks(item,nextDirection,nextFiat).length>0)??[];
+    const asset=assets.find(item=>item.code===crypto)??assets.find(item=>item.routeToken)??assets[0];
+    const options=routeNetworks(asset,nextDirection,nextFiat);
+    setCrypto(asset?.code??"");
+    setNetwork(options.find(item=>item.code===network)?.code??options[0]?.code??"");
+  }
   function swapDirection(){
     const next=direction==="buy"?"sell":"buy";
     const options=(next==="buy"?coverage?.fundingCurrencies:coverage?.fiatCurrencies)??[];
-    setFiat(options.find(item=>item.code===fiat)?.code??options.find(item=>item.code===home)?.code??options[0]?.code??"");
+    const nextFiat=options.find(item=>item.code===fiat)?.code??options.find(item=>item.code===home)?.code??options[0]?.code??"";
+    setFiat(nextFiat);alignRoute(next,nextFiat);
     setDirection(next);setSourceText(destinationText||"1");setAttempt(value=>value+1);
   }
-  function chooseFiat(value:string){setFiat(value);setAttempt(value=>value+1);}
+  function chooseFiat(value:string){setFiat(value);alignRoute(direction,value);setAttempt(value=>value+1);}
   function chooseCrypto(value:string){
     setCrypto(value);
     const asset=coverage?.transferableAssets.find(item=>item.code===value);
-    setNetwork(asset?defaultNetwork(asset):"");setAttempt(value=>value+1);
+    setNetwork(asset?defaultNetwork(asset,direction,fiat):"");setAttempt(value=>value+1);
   }
-  const error=coverageError?"Available routes could not be loaded.":!coverage?"":unsupportedBuy?"Buy estimates aren’t available for NGN yet.":!supported?"No estimate is available for this route.":expired?"Estimate expired. Refresh to see a current estimate.":current?.status==="error"?UNAVAILABLE:"";
+  const error=coverageError?"Available routes could not be loaded.":!coverage?"":!supported?"No estimate is available for this route.":expired?"Estimate expired. Refresh to see a current estimate.":current?.status==="error"?UNAVAILABLE:"";
   const status=!coverage?(coverageError?"Unavailable":"Loading routes"):busy?"Updating estimate":quote?(quote.pricingMode==="SIMULATOR"?"Illustrative estimate":"Indicative estimate"):expired?"Expired":error?"Unavailable":"Enter an amount";
 
   return <section className="rate-calculator" aria-labelledby="rate-calculator-title">
@@ -205,8 +227,9 @@ export function RateCalculator(){
       </div>
       <aside className="rate-calculator-meta">
         <div><span>Estimated total fee</span><strong>{quote?.customerFee!=null?`${formatAmount(quote.customerFee,fiat)} ${fiat}`:busy?"…":"—"}</strong></div>
+        {networkFee?<div><span>Network fee</span><strong>{formatAmount(networkFee,destinationAsset)} {destinationAsset.replace("_",".")}</strong></div>:null}
         <div><span>Estimate</span><strong role="status" aria-live="polite">{status}</strong></div>
-        <div><label htmlFor="rate-network">Network</label><select id="rate-network" aria-label="Network" value={network} disabled={!networks.length} onChange={event=>{setNetwork(event.target.value);setAttempt(value=>value+1);}}>{networks.map(item=><option key={item.code} value={item.code}>{networkRailLabel(item.code)}</option>)}</select></div>
+        <div><label htmlFor="rate-network">Network</label><select id="rate-network" aria-label="Network" value={network} disabled={!networks.length} onChange={event=>{setNetwork(event.target.value);setAttempt(value=>value+1);}}>{networks.map(item=><option key={item.code} value={item.code}>{item.railLabel??networkRailLabel(item.code)}</option>)}</select></div>
         {error?<p className="rate-calculator-error" role="status">{error}</p>:null}
         {coverageError?<button type="button" className="compliance-secondary" onClick={()=>{setCoverageError(false);setCoverageAttempt(value=>value+1);}}>Retry loading routes</button>:null}
         {canEstimate&&(expired||current?.status==="error")?<button type="button" className="compliance-secondary" onClick={()=>setAttempt(value=>value+1)}>Refresh estimate</button>:null}
