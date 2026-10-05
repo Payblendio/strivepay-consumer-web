@@ -26,7 +26,7 @@ export function DeletionFacts() {
           <li>Transaction, payment and ledger records.</li>
           <li>Identity verification and anti-money-laundering records.</li>
         </ul>
-        <p>Financial regulations require us to keep these for 5 years after your account closes. They are then deleted.</p>
+        <p>Financial regulations require us to keep these for 5 years after your account closes. They are then deleted. See our <Link href="/privacy">privacy policy</Link>.</p>
       </div>
     </div>
   );
