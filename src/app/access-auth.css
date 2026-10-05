@@ -1536,3 +1536,12 @@ button.strivepay-swal-close {
   background: #f1f4f6;
   color: #7b8798;
 }
+
+.deletion-facts { display: grid; gap: 18px; margin: 0 0 26px; padding: 18px; border: 1px solid var(--access-line); background: var(--access-soft); }
+.deletion-facts h3 { margin: 0 0 8px; color: var(--access-ink); font-size: 14px; font-weight: 700; }
+.deletion-facts ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.deletion-facts li, .deletion-facts p { color: var(--access-body); font-size: 14px; line-height: 1.55; }
+.deletion-facts p { margin: 8px 0 0; }
+.deletion-reason { width: 100%; min-height: 84px; padding: 12px 14px; border: 1px solid var(--access-line); border-radius: 0; background: var(--access-elevated); color: var(--access-ink); font: inherit; font-size: 15px; resize: vertical; }
+.deletion-reason:focus-visible { border-color: var(--access-accent); outline: none; box-shadow: 0 0 0 3px rgba(13, 166, 182, .12); }
+.access-primary-button.deletion-danger { background: var(--access-danger); border-color: var(--access-danger); color: #fff; }

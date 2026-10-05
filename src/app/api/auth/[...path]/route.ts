@@ -3,8 +3,8 @@ import {NextRequest,NextResponse} from "next/server";
 import {backend,responseBody} from "@/lib/backend";
 import {secureCookies} from "@/lib/cookie-secure";
 
-const PUBLIC=new Set(["register","login","login/2fa","refresh","logout","email/verify","email/resend","password/forgot","password/reset"]);
-const PROTECTED_POST=new Set(["logout-all","account-type","password/change","2fa/setup","2fa/enable","2fa/disable","2fa/reminder"]);
+const PUBLIC=new Set(["register","login","login/2fa","refresh","logout","email/verify","email/resend","password/forgot","password/reset","account-deletion/request","account-deletion/confirm"]);
+const PROTECTED_POST=new Set(["logout-all","account-deletion","account-type","password/change","2fa/setup","2fa/enable","2fa/disable","2fa/reminder"]);
 const ACCESS="sp_access",REFRESH="sp_refresh";
 
 function sessionRoute(route:string){
@@ -30,7 +30,7 @@ async function authorized(request:NextRequest,route:string,method:string,body?:s
   const upstream=await backend(`/v1/auth/${route}`,{method,headers,body});
   const data=await responseBody(upstream);
   const response=NextResponse.json(upstream.ok?(data??{}):data??{},{status:upstream.status===204?200:upstream.status});
-  if((route==="logout"||route==="logout-all")&&upstream.ok)clearTokens(response);
+  if((route==="logout"||route==="logout-all"||route==="account-deletion")&&upstream.ok)clearTokens(response);
   return response;
 }
 
