@@ -1546,3 +1546,12 @@ button.strivepay-swal-close {
 .deletion-reason { width: 100%; min-height: 84px; padding: 12px 14px; border: 1px solid var(--access-line); border-radius: 0; background: var(--access-elevated); color: var(--access-ink); font: inherit; font-size: 15px; resize: vertical; }
 .deletion-reason:focus-visible { border-color: var(--access-accent); outline: none; box-shadow: 0 0 0 3px rgba(13, 166, 182, .12); }
 .access-primary-button.deletion-danger { background: var(--access-danger); border-color: var(--access-danger); color: #fff; }
+.deletion-facts a { color: var(--access-accent); }
+.deletion-choices { display: grid; gap: 10px; margin: 0; padding: 0; border: 0; }
+.deletion-choices legend { margin-bottom: 10px; color: var(--access-ink); font-size: 14px; font-weight: 600; }
+.deletion-choice { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--access-line); background: var(--access-elevated); cursor: pointer; }
+.deletion-choice.is-selected { border-color: var(--access-accent); background: var(--access-accent-soft); }
+.deletion-choice input { margin-top: 3px; accent-color: var(--access-accent); width: 16px; height: 16px; }
+.deletion-choice span { display: grid; gap: 2px; }
+.deletion-choice strong { color: var(--access-ink); font-size: 14px; font-weight: 600; }
+.deletion-choice small { color: var(--access-muted); font-size: 12px; line-height: 1.5; }

@@ -3,7 +3,7 @@ import {NextRequest,NextResponse} from "next/server";
 import {backend,responseBody} from "@/lib/backend";
 import {secureCookies} from "@/lib/cookie-secure";
 
-const PUBLIC=new Set(["register","login","login/2fa","refresh","logout","email/verify","email/resend","password/forgot","password/reset","account-deletion/request","account-deletion/confirm"]);
+const PUBLIC=new Set(["register","login","login/2fa","refresh","logout","email/verify","email/resend","password/forgot","password/reset","account-deletion/request","account-deletion/confirm","data-deletion/request","data-deletion/confirm"]);
 const PROTECTED_POST=new Set(["logout-all","account-deletion","account-type","password/change","2fa/setup","2fa/enable","2fa/disable","2fa/reminder"]);
 const ACCESS="sp_access",REFRESH="sp_refresh";
 
