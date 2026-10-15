@@ -39,6 +39,7 @@ export function SettingsScreen(){
         <SettingsRow href="/dashboard/profile" icon={accountIcons.profile} title="Profile" detail={customer.organizationLegalName||customer.email}/>
         {business?<SettingsRow href="/dashboard/settings/team" icon={accountIcons.team} title="Team" detail="Invite members and manage roles"/>:null}
         {business?<SettingsRow href="/dashboard/settings/sso" icon={accountIcons.sso} title="Company SSO" detail="SAML single sign-on for your team"/>:null}
+        <SettingsRow href="/dashboard/settings/notifications" icon={accountIcons.notifications} title="Notifications" detail="Push categories and rate digest currencies"/>
         <SettingsRow href="/dashboard/settings/security" icon={accountIcons.security} title="Security" detail="Password, authenticator, and devices"/>
         {hasBusinessMembershipHint(customer)?<>
           <SettingsRow href="/onboarding/personal" icon={accountIcons.setup} title="Personal setup" detail="Your identity check" onNavigate={()=>openScopedSetup("PERSONAL","/onboarding/personal")}/>

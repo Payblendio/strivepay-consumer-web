@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {IconChevronRight,IconKey,IconLock,IconShieldCheck,IconUser,IconUsers} from "@tabler/icons-react";
+import {IconBell,IconChevronRight,IconKey,IconLock,IconShieldCheck,IconUser,IconUsers} from "@tabler/icons-react";
 import type {ReactNode} from "react";
 
 export function AccountPage({title,copy,children}:{title:string;copy:string;children:ReactNode}){
@@ -32,6 +32,7 @@ export function ProfileDetail({label,value}:{label:string;value:ReactNode}){
 }
 
 export const accountIcons={
+  notifications:<IconBell size={18}/>,
   profile:<IconUser size={18}/>,
   security:<IconLock size={18}/>,
   setup:<IconShieldCheck size={18}/>,

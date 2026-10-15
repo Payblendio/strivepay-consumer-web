@@ -227,6 +227,7 @@ export function dashboardPageMeta(pathname:string,givenName?:string):DashboardPa
   if(pathname.startsWith("/dashboard/accounts"))return {title:"Accounts",copy:"Pay-in accounts and payout destinations.",active:"accounts",index:"05"};
   if(pathname.startsWith("/dashboard/how-it-works"))return {title:"How it works",copy:"How StrivePay moves money, and what you are responsible for.",active:"how-it-works",index:"06"};
   if(pathname.startsWith("/dashboard/settings/team"))return {title:"Team",copy:"Invite members and manage roles.",active:"overview",index:"01"};
+  if(pathname.startsWith("/dashboard/settings/notifications"))return {title:"Notifications",copy:"Choose your push updates and rate currencies.",active:"overview",index:"01"};
   if(pathname.startsWith("/dashboard/settings/security/password"))return {title:"Change password",copy:"Update your password and sign in again.",active:"overview",index:"01"};
   if(pathname.startsWith("/dashboard/settings/security/authenticator"))return {title:"Authenticator",copy:"Add a 6-digit code step after your password.",active:"overview",index:"01"};
   if(pathname.startsWith("/dashboard/settings/security/sessions"))return {title:"Signed-in devices",copy:"Revoke devices you no longer use.",active:"overview",index:"01"};
