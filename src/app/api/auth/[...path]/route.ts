@@ -6,6 +6,9 @@ import {secureCookies} from "@/lib/cookie-secure";
 const PUBLIC=new Set(["register","login","login/2fa","refresh","logout","email/verify","email/resend","password/forgot","password/reset","account-deletion/request","account-deletion/confirm","data-deletion/request","data-deletion/confirm"]);
 const PROTECTED_POST=new Set(["logout-all","account-deletion","account-type","password/change","2fa/setup","2fa/enable","2fa/disable","2fa/reminder"]);
 const ACCESS="sp_access",REFRESH="sp_refresh";
+// Survives sign-out so a browser keeps one session; signing in elsewhere never ends it.
+const DEVICE="sp_device",DEVICE_PATTERN=/^[A-Za-z0-9_-]{16,64}$/;
+function deviceId(saved:string|undefined){return saved&&DEVICE_PATTERN.test(saved)?saved:`web-${crypto.randomUUID().replace(/-/g,"")}`;}
 
 function sessionRoute(route:string){
   if(route==="sessions")return true;
@@ -49,10 +52,12 @@ export async function POST(request:NextRequest,context:{params:Promise<{path:str
     const jar=await cookies();
     let payload=await request.json().catch(()=>({}));
     if(route==="refresh")payload={refreshToken:jar.get(REFRESH)?.value};
-    const headers=clientHeaders(request,{"Content-Type":"application/json"});
+    const savedDevice=jar.get(DEVICE)?.value,device=deviceId(savedDevice);
+    const headers=clientHeaders(request,{"Content-Type":"application/json","X-Device-Id":device});
     const upstream=await backend(`/v1/auth/${route}`,{method:"POST",headers,body:JSON.stringify(payload)});
     const data=await responseBody(upstream);
     const response=NextResponse.json(upstream.ok?safe(data):data??{},{status:upstream.status===204?200:upstream.status});
+    if(device!==savedDevice)response.cookies.set(DEVICE,device,{httpOnly:true,secure:secureCookies(),sameSite:"lax",path:"/api/auth",maxAge:60*60*24*730});
     if(upstream.ok&&(route==="login"||route==="login/2fa"||route==="register"||route==="refresh"||route==="email/verify"))setTokens(response,data);
     // Do not clear cookies on failed refresh: a concurrent login can set fresh
     // cookies, and wiping them here immediately signs the user back out.
