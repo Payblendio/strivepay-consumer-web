@@ -6,6 +6,7 @@ import {CoverageExplorer} from "@/components/marketing/coverage-explorer";
 import {RoutePreview} from "@/components/marketing/route-preview";
 import {MoneyRouteMap} from "@/components/marketing/money-route-map";
 import {PartnerMarquee} from "@/components/marketing/partner-marquee";
+import {LEGAL_LINKS} from "@/content/legal/links";
 import "./landing.css";
 import "./hero-flow.css";
 
@@ -91,6 +92,6 @@ export default function Home() {
       <section className="landing-faq" aria-labelledby="faq-heading"><div><p className="landing-eyebrow">GOOD TO KNOW</p><h2 id="faq-heading">A few things,<br/>before you move.</h2></div><div className="landing-questions">{questions.map(([q,a])=><details key={q}><summary>{q}<IconChevronDown size={18}/></summary><p>{a}</p></details>)}</div></section>
       <section className="landing-closing" aria-labelledby="closing-heading"><span className="landing-closing-symbol" aria-hidden="true">↔</span><p className="landing-eyebrow">THIS IS YOUR NEXT MOVE</p><h2 id="closing-heading">From here.<br/><span>To what’s next.</span></h2><Link href="/register" className="landing-button">Create your account <IconArrowRight size={18}/></Link></section>
     </main>
-    <footer className="landing-footer"><div><Link href="/" aria-label="StrivePay home"><Image src="/branding/strivepay-logo-dark.svg" alt="StrivePay" width={145} height={37}/></Link><p>Bank to crypto. And back again.</p></div><nav aria-label="Footer navigation"><a href="#coverage">Coverage</a><a href="#how-it-works">How it works</a><Link href="/login">Sign in</Link><Link href="/register">Get started</Link></nav><div className="landing-fineprint"><span>© {new Date().getFullYear()} StrivePay</span><p>Availability depends on residence, account type, currency and network. Crypto values can change. Review your route and fees before transferring.</p></div></footer>
+    <footer className="landing-footer"><div><Link href="/" aria-label="StrivePay home"><Image src="/branding/strivepay-logo-dark.svg" alt="StrivePay" width={145} height={37}/></Link><p>Bank to crypto. And back again.</p></div><nav aria-label="Footer navigation"><a href="#coverage">Coverage</a><a href="#how-it-works">How it works</a><Link href="/login">Sign in</Link><Link href="/register">Get started</Link></nav><nav className="landing-legal" aria-label="Legal links">{LEGAL_LINKS.map(link=><Link key={link.href} href={link.href}>{link.short}</Link>)}</nav><div className="landing-fineprint"><span>© {new Date().getFullYear()} StrivePay</span><p>Availability depends on residence, account type, currency and network. Crypto values can change. Review your route and fees before transferring.</p></div></footer>
   </div>;
 }
