@@ -5,6 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import AmlPolicyPage from "@/app/aml-policy/page";
 import AntiBriberyPolicyPage, {metadata as antiBriberyMetadata} from "@/app/anti-bribery-policy/page";
 import PrivacyPolicyPage from "@/app/privacy/page";
+import TermsPage from "@/app/terms/page";
 import {amlPolicy} from "@/content/legal/aml-cft-cpf-policy";
 import {antiBriberyPolicy} from "@/content/legal/anti-bribery-corruption-policy";
 import {LEGAL_LINKS} from "@/content/legal/links";
@@ -62,13 +63,33 @@ describe("legal pages", () => {
   });
 
   it("links every legal document from each page and marks the current one", () => {
-    for (const [page, current] of [[<AmlPolicyPage key="a" />, "/aml-policy"], [<AntiBriberyPolicyPage key="b" />, "/anti-bribery-policy"], [<PrivacyPolicyPage key="c" />, "/privacy"]] as const) {
+    for (const [page, current] of [[<AmlPolicyPage key="a" />, "/aml-policy"], [<AntiBriberyPolicyPage key="b" />, "/anti-bribery-policy"], [<PrivacyPolicyPage key="c" />, "/privacy"], [<TermsPage key="d" />, "/terms"]] as const) {
       render(page);
       const nav = within(screen.getByRole("navigation", {name: "Legal documents"}));
       for (const link of LEGAL_LINKS) expect(nav.getByRole("link", {name: link.short})).toHaveAttribute("href", link.href);
       expect(nav.getByRole("link", {current: "page"})).toHaveAttribute("href", current);
       cleanup();
     }
+  });
+
+  it("publishes terms that match the product: buy and sell digital assets, no unsupported products", () => {
+    render(<TermsPage />);
+    expect(screen.getByRole("heading", {level: 1, name: "Terms and conditions"})).toBeInTheDocument();
+    const contents = within(screen.getByRole("navigation", {name: "Contents"}));
+    expect(contents.getAllByRole("link")).toHaveLength(18);
+    for (const link of contents.getAllByRole("link")) {
+      expect(document.getElementById(link.getAttribute("href")!.slice(1)), link.textContent ?? "").not.toBeNull();
+    }
+    const text = everyWord(document.body.textContent);
+    for (const banned of ["payblend", "virtual card", "gift card", "bill payment", "saving product", "[info@"]) {
+      expect(text, `terms mention "${banned}"`).not.toContain(banned);
+    }
+    for (const required of ["port harcourt", "60 clear days", "irreversible", "profile → security → delete account"]) {
+      expect(text, `terms are missing "${required}"`).toContain(required);
+    }
+    const body = within(document.body);
+    expect(body.getAllByRole("link", {name: "privacy policy"})[0]).toHaveAttribute("href", "/privacy");
+    expect(body.getAllByRole("link", {name: "AML, CFT and CPF policy"})[0]).toHaveAttribute("href", "/aml-policy");
   });
 
   it("points customers to where account deletion lives in the app today", () => {
