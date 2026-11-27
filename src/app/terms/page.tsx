@@ -211,7 +211,7 @@ export default function TermsPage() {
           To the extent the law allows:
         </p>
         <ul>
-          <li>our liability to you for any transaction is limited to the amount of that transaction;</li>
+          <li>our total liability to you for any claim relating to a buy or sell transaction is limited to the amount of that transaction;</li>
           <li>we are not liable for losses caused by incorrect details you give us, unauthorised use that results from you not protecting your credentials, market movements, or events outside our reasonable control; and</li>
           <li>we are not liable for any indirect or consequential loss.</li>
         </ul>

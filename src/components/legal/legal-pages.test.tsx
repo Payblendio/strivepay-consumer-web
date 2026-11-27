@@ -84,7 +84,7 @@ describe("legal pages", () => {
     for (const banned of ["payblend", "virtual card", "gift card", "bill payment", "saving product", "[info@"]) {
       expect(text, `terms mention "${banned}"`).not.toContain(banned);
     }
-    for (const required of ["port harcourt", "60 clear days", "irreversible", "profile → security → delete account"]) {
+    for (const required of ["port harcourt", "60 clear days", "irreversible", "relating to a buy or sell transaction is limited to the amount of that transaction", "profile → security → delete account"]) {
       expect(text, `terms are missing "${required}"`).toContain(required);
     }
     const body = within(document.body);
