@@ -21,6 +21,13 @@ function clientHeaders(request:NextRequest,extra:Record<string,string>={}){
   if(agent)headers["User-Agent"]=agent;
   const forwarded=request.headers.get("x-forwarded-for")||request.headers.get("x-real-ip");
   if(forwarded)headers["X-Forwarded-For"]=forwarded;
+  // What the API records about where an account was created. Origin goes under its own name so the API's CORS check never sees it.
+  for(const name of ["accept-language","sec-ch-ua","sec-ch-ua-platform","sec-ch-ua-mobile","referer"]){
+    const value=request.headers.get(name);
+    if(value)headers[name]=value;
+  }
+  const origin=request.headers.get("origin");
+  if(origin)headers["X-Client-Origin"]=origin;
   return headers;
 }
 
